@@ -13,17 +13,16 @@ export function OverviewPage() {
   const activeEvent = events.find((item) => item.cameraId === activeCamera.id);
 
   return (
-    <div className="page-shell">
-      <div className="page-topbar">
+    <div className="page-shell overview-page">
+      <div className="page-topbar overview-topbar">
         <div className="page-title-block">
           <div className="page-kicker">COMMUNITY RISK COMMAND</div>
-          <div className="page-title-row">
+          <div className="page-title-row overview-title-row">
             <h2>风险总览指挥台</h2>
-            <p>聚焦当前高风险点位、模型研判结果与 GIS 联动状态，面向大屏值守场景优化展示。</p>
           </div>
         </div>
 
-        <div className="page-actions">
+        <div className="page-actions overview-actions">
           <Tag color="processing" style={{ margin: 0 }}>
             当前焦点：{activeCamera.name}
           </Tag>

@@ -276,6 +276,35 @@ a {
   flex-wrap: wrap;
 }
 
+.overview-page {
+  gap: calc(var(--panel-gap) - 2px);
+}
+
+.overview-topbar {
+  align-items: center;
+  padding: 4px 0 2px;
+}
+
+.overview-page .page-title-block {
+  gap: 6px;
+}
+
+.overview-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.overview-page .page-title-row h2 {
+  font-size: clamp(28px, 2.2vw, 38px);
+  letter-spacing: 0.05em;
+}
+
+.overview-actions {
+  gap: 10px;
+}
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -365,7 +394,7 @@ a {
 
 .overview-stage {
   display: grid;
-  grid-template-columns: 1.15fr 0.98fr 1.12fr;
+  grid-template-columns: 1.22fr 0.92fr 1.08fr;
   gap: var(--panel-gap);
   min-height: 0;
 }
@@ -402,7 +431,7 @@ a {
 }
 
 .camera-brief-card {
-  padding: 14px;
+  padding: 16px 16px 14px;
 }
 
 .camera-brief-header {
@@ -1149,6 +1178,10 @@ a {
     grid-template-columns: 1.05fr 0.95fr 1.02fr;
   }
 
+  .overview-page .page-title-row h2 {
+    font-size: clamp(26px, 2vw, 34px);
+  }
+
   .camera-card-score {
     font-size: 24px;
   }
@@ -1174,6 +1207,11 @@ a {
 
   .metrics-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .overview-topbar {
+    align-items: end;
+    padding: 0;
   }
 
   .overview-stage,
