@@ -11,7 +11,7 @@ interface CameraMapPanelProps {
   onSelect: (cameraId: string) => void;
 }
 
-const mapAk = import.meta.env.VITE_BAIDU_MAP_AK;
+const mapAk = (import.meta.env.VITE_BAIDU_MAP_AK || '').trim();
 const mapStyleId = import.meta.env.VITE_BAIDU_MAP_STYLE_ID;
 const mapCenterLng = Number(import.meta.env.VITE_BAIDU_MAP_CENTER_LNG || 118.796877);
 const mapCenterLat = Number(import.meta.env.VITE_BAIDU_MAP_CENTER_LAT || 32.060255);
@@ -40,10 +40,6 @@ export function CameraMapPanel({ cameras, activeCameraId, onSelect }: CameraMapP
 
     async function initMap() {
       if (!mapRef.current) return;
-      if (!mapAk) {
-        setMapError('未配置百度地图 AK，请先在 .env 中填写 VITE_BAIDU_MAP_AK');
-        return;
-      }
 
       try {
         setMapError(undefined);
@@ -53,8 +49,12 @@ export function CameraMapPanel({ cameras, activeCameraId, onSelect }: CameraMapP
         const map = new BMapGL.Map(mapRef.current);
         const point = new BMapGL.Point(mapCenterLng, mapCenterLat);
         map.centerAndZoom(point, mapZoom);
+        map.enableScrollWheelZoom();
         map.addControl(new BMapGL.ScaleControl());
         map.addControl(new BMapGL.ZoomControl());
+        if (window.BMAP_NORMAL_MAP) {
+          map.setMapType(window.BMAP_NORMAL_MAP);
+        }
         if (mapStyleId) {
           map.setMapStyleV2?.({ styleId: mapStyleId });
         }
@@ -70,6 +70,7 @@ export function CameraMapPanel({ cameras, activeCameraId, onSelect }: CameraMapP
 
     return () => {
       disposed = true;
+      instanceRef.current?.clearOverlays?.();
       markersRef.current.clear();
       instanceRef.current = null;
       setMapReady(false);
@@ -132,19 +133,24 @@ export function CameraMapPanel({ cameras, activeCameraId, onSelect }: CameraMapP
 
   useEffect(() => {
     const map = instanceRef.current;
+    if (!mapReady || !map) return;
+
+    if (mapType === '卫星图' && window.BMAP_EARTH_MAP) {
+      map.setMapType(window.BMAP_EARTH_MAP);
+    } else if (window.BMAP_NORMAL_MAP) {
+      map.setMapType(window.BMAP_NORMAL_MAP);
+    }
+  }, [mapReady, mapType]);
+
+  useEffect(() => {
+    const map = instanceRef.current;
     const BMapGL = window.BMapGL;
     const activeCamera = cameras.find((camera) => camera.id === activeCameraId);
     if (!mapReady || !map || !BMapGL || !activeCamera?.mapPoint) return;
 
     const activePoint = new BMapGL.Point(activeCamera.mapPoint.lng, activeCamera.mapPoint.lat);
     map.panTo(activePoint);
-
-    if (mapType === '卫星图' && window.BMAP_SATELLITE_MAP) {
-      map.setMapType(window.BMAP_SATELLITE_MAP);
-    } else if (window.BMAP_NORMAL_MAP) {
-      map.setMapType(window.BMAP_NORMAL_MAP);
-    }
-  }, [activeCameraId, cameras, mapReady, mapType]);
+  }, [activeCameraId, cameras, mapReady]);
 
   const handleSearch = () => {
     const matched = filteredCameras[0];

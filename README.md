@@ -78,8 +78,11 @@ cp .env.example .env
 ```env
 VITE_BAIDU_MAP_AK=你的百度地图浏览器端AK
 VITE_BAIDU_MAP_STYLE_ID=
+VITE_BAIDU_MAP_CENTER_LNG=118.796877
+VITE_BAIDU_MAP_CENTER_LAT=32.060255
+VITE_BAIDU_MAP_ZOOM=16
 VITE_QWEN_PROXY_PATH=/api/qwen/chat/completions
-VITE_QWEN_MODEL=qwen3.5-vl
+VITE_QWEN_MODEL=qwen3.5-9b-uncensored-hauhaucs-aggressive
 VITE_DEMO_STREAM_URL=
 VITE_DEMO_STREAM_TYPE=flv
 ```
@@ -97,9 +100,9 @@ cp .env.server.example .env.server
 ```env
 SERVER_PORT=8787
 CORS_ORIGIN=http://localhost:5173
-QWEN_BASE_URL=https://your-qwen-openai-compatible-endpoint/v1
-QWEN_API_KEY=your_api_key_here
-QWEN_MODEL=qwen3.5-vl
+QWEN_BASE_URL=http://127.0.0.1:1234/v1
+QWEN_API_KEY=
+QWEN_MODEL=qwen3.5-9b-uncensored-hauhaucs-aggressive
 QWEN_TIMEOUT=60000
 ```
 
@@ -166,6 +169,18 @@ src/services/map/baiduMap.ts
 - 搜索定位与地图中心联动
 - 标准路网 / 卫星图切换
 - 点击点位切换当前监控视角
+
+接入要求：
+- 需填写真实的“百度地图浏览器端 AK”，不要保留占位文本
+- 本地开发时，需将 `http://localhost:5173` 加入百度地图控制台的 Referer 白名单
+- JSAPI GL 的脚本入口为 `https://api.map.baidu.com/api?v=1.0&type=webgl&ak=你的AK`，运行时命名空间为 `BMapGL`
+- 地图展示坐标请使用 `BD09`；如果你的数据源来自 `WGS84` 或 `GCJ02`，请先转换后再上图
+
+常见故障排查顺序：
+1. 确认 `.env` 中 `VITE_BAIDU_MAP_AK` 已填写为真实浏览器端 AK
+2. 确认百度地图控制台已放行当前访问域名，例如 `http://localhost:5173`
+3. 确认浏览器网络可以访问 `https://api.map.baidu.com`
+4. 如果地图加载成功但点位整体偏移，再检查坐标是否为 `BD09`
 
 ## 8. 页面结构
 
