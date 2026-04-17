@@ -1,6 +1,5 @@
-import { Button, Space, Tag } from 'antd';
-import { CameraPoint } from '@/types';
-import { FullscreenOutlined, PictureOutlined } from '@ant-design/icons';
+import { Space, Tag } from 'antd';
+import type { CameraPoint } from '@/types';
 import { riskColorMap, riskLevelTextMap } from '@/utils/risk';
 import { LiveVideoPlayer } from '@/components/player/LiveVideoPlayer';
 
@@ -17,7 +16,7 @@ export function VideoPanel({ camera, subtitle }: VideoPanelProps) {
           <div className="video-title">{camera.name}</div>
           <div className="video-subtitle">{subtitle ?? `${camera.area} · ${camera.scene}`}</div>
         </div>
-        <Space>
+        <Space size={4}>
           <Tag color={camera.status === 'online' ? 'success' : 'default'}>
             {camera.status === 'online' ? '实时在线' : '设备离线'}
           </Tag>
@@ -37,11 +36,6 @@ export function VideoPanel({ camera, subtitle }: VideoPanelProps) {
         <div className="detection-box notice-box">
           <span>重点区域</span>
         </div>
-      </div>
-
-      <div className="video-actions">
-        <Button icon={<FullscreenOutlined />}>全屏查看</Button>
-        <Button icon={<PictureOutlined />}>生成快照</Button>
       </div>
     </div>
   );

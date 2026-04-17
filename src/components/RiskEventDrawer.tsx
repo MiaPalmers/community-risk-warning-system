@@ -16,10 +16,13 @@ export function RiskEventDrawer({ open, event, onClose, onMarkDone }: RiskEventD
       title={event?.title ?? '事件详情'}
       open={open}
       onClose={onClose}
-      width={620}
+      width={580}
+      styles={{
+        body: { padding: 16, overflow: 'auto' }
+      }}
       extra={
         event ? (
-          <Space>
+          <Space size={4}>
             <Tag color={event.level === 'A' ? 'error' : event.level === 'B' ? 'warning' : 'processing'}>
               {event.level}级
             </Tag>
@@ -32,7 +35,7 @@ export function RiskEventDrawer({ open, event, onClose, onMarkDone }: RiskEventD
         <div className="drawer-body">
           <div className="snapshot-box">{event.snapshot}</div>
 
-          <Descriptions column={1} size="small" bordered>
+          <Descriptions column={1} size="small" bordered style={{ marginTop: 12 }}>
             <Descriptions.Item label="事件类型">{event.eventType}</Descriptions.Item>
             <Descriptions.Item label="发生时间">{event.occurredAt}</Descriptions.Item>
             <Descriptions.Item label="监控点位">{event.cameraName}</Descriptions.Item>
@@ -41,14 +44,14 @@ export function RiskEventDrawer({ open, event, onClose, onMarkDone }: RiskEventD
             <Descriptions.Item label="处置建议">{event.suggestion}</Descriptions.Item>
           </Descriptions>
 
-          <div style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 12 }}>
             <VlmAnalysisPanel analysis={event.analysis} compact />
           </div>
 
           <div className="drawer-footer">
-            <Button>生成证据包</Button>
-            <Button type="primary">推送处置</Button>
-            <Button onClick={() => onMarkDone(event.id)}>标记已处置</Button>
+            <Button size="small">生成证据包</Button>
+            <Button size="small" type="primary">推送处置</Button>
+            <Button size="small" onClick={() => onMarkDone(event.id)}>标记已处置</Button>
           </div>
         </div>
       ) : null}

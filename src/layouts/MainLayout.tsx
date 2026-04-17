@@ -1,79 +1,90 @@
-import { BellOutlined, DeploymentUnitOutlined, EyeOutlined, RadarChartOutlined } from '@ant-design/icons';
-import { Avatar, Badge, Button, Layout, Menu, Space, Tag, Typography } from 'antd';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import {
+  BellOutlined,
+  DeploymentUnitOutlined,
+  EyeOutlined,
+  RadarChartOutlined
+} from '@ant-design/icons';
+import { Avatar, Badge, Space, Tag } from 'antd';
+import { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-const { Header, Sider, Content } = Layout;
-
-const menuItems = [
-  {
-    key: '/overview',
-    icon: <EyeOutlined />,
-    label: <Link to="/overview">总览</Link>
-  },
-  {
-    key: '/monitor',
-    icon: <DeploymentUnitOutlined />,
-    label: <Link to="/monitor">监控选择</Link>
-  },
-  {
-    key: '/alerts',
-    icon: <BellOutlined />,
-    label: <Link to="/alerts">重点预警</Link>
-  },
-  {
-    key: '/model-center',
-    icon: <RadarChartOutlined />,
-    label: <Link to="/model-center">模型中心</Link>
-  }
+const navItems = [
+  { key: '/overview', label: '总览', icon: <EyeOutlined /> },
+  { key: '/monitor', label: '监控选择', icon: <DeploymentUnitOutlined /> },
+  { key: '/alerts', label: '重点预警', icon: <BellOutlined /> },
+  { key: '/model-center', label: '模型中心', icon: <RadarChartOutlined /> }
 ];
+
+function formatTime(date: Date) {
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+function formatDate(date: Date) {
+  const y = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+  const w = weekDays[date.getDay()];
+  return `${y}-${mo}-${d} 星期${w}`;
+}
 
 export function MainLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <Layout className="app-shell">
-      <Sider width={248} className="app-sider">
-        <div className="brand-box">
+    <div className="app-shell">
+      <header className="screen-header">
+        <div className="header-left">
           <div className="brand-logo">险</div>
           <div>
-            <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
+            <div style={{ fontWeight: 700, color: '#fff', fontSize: 16, lineHeight: '22px' }}>
               险封·社区风险预警平台
-            </Typography.Title>
+            </div>
             <div className="brand-subtitle">VLM + Agent 综合系统</div>
           </div>
         </div>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={menuItems}
-          className="app-menu"
-        />
-      </Sider>
+        <nav className="header-nav">
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              className={`nav-tab ${location.pathname === item.key ? 'active' : ''}`}
+              onClick={() => navigate(item.key)}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
 
-      <Layout>
-        <Header className="app-header">
-          <div>
-            <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
-              社区风险治理可视化终端
-            </Typography.Title>
-            <div className="header-subtitle">前端骨架版 · 可直接接入真实视频流 / 地图 / Qwen3.5 接口</div>
-          </div>
+        <div className="header-right">
+          <div className="header-clock">{formatTime(now)}</div>
+          <div className="header-divider" />
+          <div style={{ fontSize: 12, color: 'rgba(229,238,252,0.5)' }}>{formatDate(now)}</div>
+          <div className="header-divider" />
+          <Tag color="success" style={{ margin: 0 }}>系统在线</Tag>
+          <Badge count={3} size="small">
+            <div className="header-bell">
+              <BellOutlined />
+            </div>
+          </Badge>
+          <Avatar size="small" style={{ background: '#2f7bff' }}>管</Avatar>
+        </div>
+      </header>
 
-          <Space size="middle">
-            <Tag color="success">系统在线</Tag>
-            <Badge count={3}>
-              <Button shape="circle" icon={<BellOutlined />} />
-            </Badge>
-            <Avatar style={{ background: '#2f7bff' }}>管</Avatar>
-          </Space>
-        </Header>
-
-        <Content className="app-content">
-          <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
+      <main className="screen-content">
+        <Outlet />
+      </main>
+    </div>
   );
 }

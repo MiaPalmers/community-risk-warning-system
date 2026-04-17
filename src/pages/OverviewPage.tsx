@@ -1,4 +1,4 @@
-import { Button, Col, Row, Space } from 'antd';
+import { Button, Space } from 'antd';
 import { MetricCard } from '@/components/MetricCard';
 import { SectionCard } from '@/components/SectionCard';
 import { VideoPanel } from '@/components/VideoPanel';
@@ -19,34 +19,33 @@ export function OverviewPage() {
         ))}
       </div>
 
-      <Row gutter={16}>
-        <Col span={14}>
+      <div className="overview-body">
+        <div className="overview-left">
           <SectionCard
             title="重点监控总览"
             extra={
-              <Space>
-                <Button>生成快照</Button>
-                <Button type="primary">进入处置</Button>
+              <Space size={4}>
+                <Button size="small">生成快照</Button>
+                <Button size="small" type="primary">进入处置</Button>
               </Space>
             }
           >
             <VideoPanel camera={activeCamera} subtitle="默认播放当前风险最高的监控点位" />
-            <div style={{ marginTop: 16 }}>
-              <VlmAnalysisPanel analysis={analysis} />
-            </div>
           </SectionCard>
-        </Col>
 
-        <Col span={10}>
-          <SectionCard title="GIS 摄像头联动地图">
+          <VlmAnalysisPanel analysis={analysis} />
+        </div>
+
+        <div className="overview-right">
+          <SectionCard className="section-fill" title="GIS 摄像头联动地图">
             <CameraMapPanel
               cameras={cameras}
               activeCameraId={activeCameraId}
               onSelect={setActiveCamera}
             />
           </SectionCard>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 }

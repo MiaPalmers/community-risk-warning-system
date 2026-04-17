@@ -17,10 +17,10 @@ export function LiveVideoPlayer({ url, type = 'flv', posterText }: LiveVideoPlay
 
   const supportText = useMemo(() => {
     if (type === 'flv' || type === 'mpegts') {
-      return mpegts.getFeatureList().mseLivePlayback ? '支持 MSE 实时流' : '当前浏览器不支持 MSE 实时流';
+      return mpegts.getFeatureList().mseLivePlayback ? '支持 MSE' : '不支持 MSE';
     }
 
-    return '使用浏览器原生 video 播放';
+    return '原生播放';
   }, [type]);
 
   useEffect(() => {
@@ -85,16 +85,16 @@ export function LiveVideoPlayer({ url, type = 'flv', posterText }: LiveVideoPlay
   return (
     <div className="live-player-shell">
       <div className="live-player-topbar">
-        <Space wrap>
-          <Tag color="processing">{type.toUpperCase()}</Tag>
-          <Tag color={status === 'playing' ? 'success' : status === 'error' ? 'error' : 'default'}>
-            {status === 'playing' ? '实时播放中' : status === 'error' ? '播放异常' : '待连接'}
+        <Space size={4} wrap>
+          <Tag color="processing" style={{ fontSize: 11 }}>{type.toUpperCase()}</Tag>
+          <Tag color={status === 'playing' ? 'success' : status === 'error' ? 'error' : 'default'} style={{ fontSize: 11 }}>
+            {status === 'playing' ? '播放中' : status === 'error' ? '异常' : '待连接'}
           </Tag>
-          <Tag>{supportText}</Tag>
+          <Tag style={{ fontSize: 11 }}>{supportText}</Tag>
         </Space>
         {url ? (
           <Button size="small" onClick={() => videoRef.current?.play().catch(() => undefined)}>
-            重试播放
+            重试
           </Button>
         ) : null}
       </div>
@@ -109,7 +109,7 @@ export function LiveVideoPlayer({ url, type = 'flv', posterText }: LiveVideoPlay
         ) : (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={posterText || '未配置实时视频流地址，请在 .env 或 mock 数据中填写 streamUrl'}
+            description={posterText || '未配置实时视频流地址'}
           />
         )}
       </div>

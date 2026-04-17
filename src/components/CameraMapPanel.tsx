@@ -158,6 +158,7 @@ export function CameraMapPanel({ cameras, activeCameraId, onSelect }: CameraMapP
     <div className="map-panel">
       <div className="map-toolbar">
         <Input
+          size="small"
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
           onPressEnter={handleSearch}
@@ -166,17 +167,18 @@ export function CameraMapPanel({ cameras, activeCameraId, onSelect }: CameraMapP
           suffix={<Button size="small" type="link" onClick={handleSearch}>定位</Button>}
         />
         <Segmented
+          size="small"
           options={['标准路网', '卫星图']}
           value={mapType}
           onChange={(value) => setMapType(value as '标准路网' | '卫星图')}
         />
       </div>
 
-      <Space wrap>
-        <Tag color="success">百度地图 SDK</Tag>
-        <Tag>点位数：{filteredCameras.length}</Tag>
-        <Tag color="processing">当前选中：{activeCameraId}</Tag>
-      </Space>
+      <div className="map-tags-row">
+        <Tag color="success" style={{ margin: 0 }}>百度地图 SDK</Tag>
+        <Tag style={{ margin: 0 }}>点位数：{filteredCameras.length}</Tag>
+        <Tag color="processing" style={{ margin: 0 }}>当前选中：{activeCameraId}</Tag>
+      </div>
 
       {mapError ? <Alert type="warning" showIcon message="地图配置提示" description={mapError} /> : null}
 
