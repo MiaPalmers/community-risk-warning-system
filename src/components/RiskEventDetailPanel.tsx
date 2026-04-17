@@ -8,6 +8,22 @@ interface RiskEventDetailPanelProps {
   onMarkDone: (eventId: string) => void;
 }
 
+function buildEventMetaItems(event: RiskEvent) {
+  return [
+    { label: '事件类型', value: event.eventType },
+    { label: '监控点位', value: event.cameraName },
+    { label: '发生时间', value: event.occurredAt },
+    { label: '状态', value: eventStatusTextMap[event.status] }
+  ];
+}
+
+function buildEventNoteItems(event: RiskEvent) {
+  return [
+    { label: '事件摘要', value: event.summary },
+    { label: '处置建议', value: event.suggestion }
+  ];
+}
+
 export function RiskEventDetailPanel({ event, onMarkDone }: RiskEventDetailPanelProps) {
   if (!event) {
     return (
@@ -16,6 +32,9 @@ export function RiskEventDetailPanel({ event, onMarkDone }: RiskEventDetailPanel
       </div>
     );
   }
+
+  const metaItems = buildEventMetaItems(event);
+  const noteItems = buildEventNoteItems(event);
 
   return (
     <div className="event-detail-panel">
@@ -41,34 +60,22 @@ export function RiskEventDetailPanel({ event, onMarkDone }: RiskEventDetailPanel
         <div className="snapshot-box event-snapshot-box">{event.snapshot}</div>
 
         <div className="event-brief-grid">
-          <div className="brief-tile">
-            <span>事件类型</span>
-            <strong>{event.eventType}</strong>
-          </div>
-          <div className="brief-tile">
-            <span>监控点位</span>
-            <strong>{event.cameraName}</strong>
-          </div>
-          <div className="brief-tile">
-            <span>发生时间</span>
-            <strong>{event.occurredAt}</strong>
-          </div>
-          <div className="brief-tile">
-            <span>状态</span>
-            <strong>{eventStatusTextMap[event.status]}</strong>
-          </div>
+          {metaItems.map((item) => (
+            <div key={item.label} className="brief-tile">
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
         </div>
       </div>
 
       <div className="event-summary-grid">
-        <div className="detail-note-card">
-          <span>事件摘要</span>
-          <p>{event.summary}</p>
-        </div>
-        <div className="detail-note-card">
-          <span>处置建议</span>
-          <p>{event.suggestion}</p>
-        </div>
+        {noteItems.map((item) => (
+          <div key={item.label} className="detail-note-card">
+            <span>{item.label}</span>
+            <p>{item.value}</p>
+          </div>
+        ))}
       </div>
 
       <div className="event-tag-row detail-tag-row">

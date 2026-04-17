@@ -17,7 +17,6 @@ export function AlertsPage() {
       <PageHeader
         kicker="ALERT DISPATCH BOARD"
         title="重点预警处置面板"
-        description="左侧按风险等级快速切换事件，右侧固定展示证据、摘要、处置建议与 VLM 研判详情。"
         actions={
           <>
           <Tag color="error" style={{ margin: 0 }}>
