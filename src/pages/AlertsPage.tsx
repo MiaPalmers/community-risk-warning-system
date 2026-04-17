@@ -1,5 +1,5 @@
 import { Empty, Tag } from 'antd';
-import { useMemo } from 'react';
+import { PageHeader } from '@/components/PageHeader';
 import { RiskEventDetailPanel } from '@/components/RiskEventDetailPanel';
 import { SectionCard } from '@/components/SectionCard';
 import { useAppStore } from '@/store/useAppStore';
@@ -9,27 +9,17 @@ import type { RiskEvent } from '@/types';
 export function AlertsPage() {
   const { events, selectedEventId, selectEvent, markEventStatus } = useAppStore();
 
-  const currentEvent = useMemo<RiskEvent | undefined>(
-    () => events.find((item) => item.id === selectedEventId) ?? events[0],
-    [events, selectedEventId]
-  );
-
-  const handleSelect = (eventId: string) => {
-    selectEvent(eventId);
-  };
+  const currentEvent: RiskEvent | undefined =
+    events.find((item) => item.id === selectedEventId) ?? events[0];
 
   return (
     <div className="page-shell compact-page-shell">
-      <div className="page-topbar">
-        <div className="page-title-block">
-          <div className="page-kicker">ALERT DISPATCH BOARD</div>
-          <div className="page-title-row">
-            <h2>重点预警处置面板</h2>
-            <p>左侧按风险等级快速切换事件，右侧固定展示证据、摘要、处置建议与 VLM 研判详情。</p>
-          </div>
-        </div>
-
-        <div className="page-actions">
+      <PageHeader
+        kicker="ALERT DISPATCH BOARD"
+        title="重点预警处置面板"
+        description="左侧按风险等级快速切换事件，右侧固定展示证据、摘要、处置建议与 VLM 研判详情。"
+        actions={
+          <>
           <Tag color="error" style={{ margin: 0 }}>
             A级事件：{events.filter((item) => item.level === 'A').length}
           </Tag>
@@ -39,8 +29,9 @@ export function AlertsPage() {
           <Tag color="processing" style={{ margin: 0 }}>
             当前事件：{currentEvent?.id ?? '暂无'}
           </Tag>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {events.length ? (
         <div className="alerts-stage">
@@ -51,7 +42,7 @@ export function AlertsPage() {
                   key={event.id}
                   type="button"
                   className={`alert-list-item ${event.id === currentEvent?.id ? 'selected' : ''}`}
-                  onClick={() => handleSelect(event.id)}
+                  onClick={() => selectEvent(event.id)}
                 >
                   <div className="alert-list-head">
                     <div className="alert-list-heading">

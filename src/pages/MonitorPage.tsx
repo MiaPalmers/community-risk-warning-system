@@ -1,5 +1,6 @@
 import { Segmented, Tag } from 'antd';
 import { useState } from 'react';
+import { PageHeader } from '@/components/PageHeader';
 import { SectionCard } from '@/components/SectionCard';
 import { CameraListPanel } from '@/components/CameraListPanel';
 import { CameraMapPanel } from '@/components/CameraMapPanel';
@@ -14,16 +15,12 @@ export function MonitorPage() {
 
   return (
     <div className="page-shell compact-page-shell">
-      <div className="page-topbar">
-        <div className="page-title-block">
-          <div className="page-kicker">LIVE MONITOR MATRIX</div>
-          <div className="page-title-row">
-            <h2>监控点位切换中心</h2>
-            <p>通过地图或点位矩阵单击切换当前监控对象，单屏查看实时视频与 VLM 分析结果。</p>
-          </div>
-        </div>
-
-        <div className="page-actions">
+      <PageHeader
+        kicker="LIVE MONITOR MATRIX"
+        title="监控点位切换中心"
+        description="通过地图或点位矩阵单击切换当前监控对象，单屏查看实时视频与 VLM 分析结果。"
+        actions={
+          <>
           <Tag color="processing" style={{ margin: 0 }}>
             当前点位：{activeCamera.id}
           </Tag>
@@ -33,8 +30,9 @@ export function MonitorPage() {
           <Tag color="warning" style={{ margin: 0 }}>
             今日事件：{activeCamera.todayEvents}
           </Tag>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="monitor-stage">
         <SectionCard

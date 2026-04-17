@@ -1,5 +1,6 @@
 import { Button, Space, Tag } from 'antd';
 import { MetricCard } from '@/components/MetricCard';
+import { PageHeader } from '@/components/PageHeader';
 import { SectionCard } from '@/components/SectionCard';
 import { VideoPanel } from '@/components/VideoPanel';
 import { VlmAnalysisPanel } from '@/components/VlmAnalysisPanel';
@@ -14,16 +15,16 @@ export function OverviewPage() {
 
   return (
     <div className="page-shell overview-page">
-      <div className="page-topbar overview-topbar">
-        <div className="page-title-block">
-          <div className="page-kicker">COMMUNITY RISK COMMAND</div>
-          <div className="page-title-row overview-title-row">
-            <h2>风险总览指挥台</h2>
-          </div>
-          <p className="overview-intro">聚焦当前最高风险点位，用一个主画面串联视频、地图与模型结论。</p>
-        </div>
-
-        <div className="page-actions overview-actions">
+      <PageHeader
+        kicker="COMMUNITY RISK COMMAND"
+        title="风险总览指挥台"
+        description="聚焦当前最高风险点位，用一个主画面串联视频、地图与模型结论。"
+        className="overview-topbar"
+        titleRowClassName="overview-title-row"
+        descriptionClassName="overview-intro"
+        actionsClassName="overview-actions"
+        actions={
+          <>
           <Tag color="processing" style={{ margin: 0 }}>
             当前焦点：{activeCamera.name}
           </Tag>
@@ -35,8 +36,9 @@ export function OverviewPage() {
               进入处置
             </Button>
           </Space>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="metrics-grid">
         {dashboardMetrics.map((item) => (

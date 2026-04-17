@@ -2,26 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Spin } from 'antd';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { MainLayout } from '@/layouts/MainLayout';
-
-const OverviewPage = lazy(async () => {
-  const mod = await import('@/pages/OverviewPage');
-  return { default: mod.OverviewPage };
-});
-
-const MonitorPage = lazy(async () => {
-  const mod = await import('@/pages/MonitorPage');
-  return { default: mod.MonitorPage };
-});
-
-const AlertsPage = lazy(async () => {
-  const mod = await import('@/pages/AlertsPage');
-  return { default: mod.AlertsPage };
-});
-
-const ModelCenterPage = lazy(async () => {
-  const mod = await import('@/pages/ModelCenterPage');
-  return { default: mod.ModelCenterPage };
-});
+import { appPages, defaultRoute } from '@/router/pages';
 
 const NotFoundPage = lazy(async () => {
   const mod = await import('@/pages/NotFoundPage');
@@ -51,11 +32,11 @@ export const router = createBrowserRouter([
     path: '/',
     element: <MainLayout />,
     children: [
-      { index: true, element: <Navigate to="/overview" replace /> },
-      { path: '/overview', element: withSuspense(<OverviewPage />) },
-      { path: '/monitor', element: withSuspense(<MonitorPage />) },
-      { path: '/alerts', element: withSuspense(<AlertsPage />) },
-      { path: '/model-center', element: withSuspense(<ModelCenterPage />) }
+      { index: true, element: <Navigate to={defaultRoute} replace /> },
+      ...appPages.map(({ path, component: PageComponent }) => ({
+        path,
+        element: withSuspense(<PageComponent />)
+      }))
     ]
   },
   {

@@ -1,19 +1,10 @@
 import {
   BellOutlined,
-  DeploymentUnitOutlined,
-  EyeOutlined,
-  RadarChartOutlined
 } from '@ant-design/icons';
 import { Avatar, Badge, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-
-const navItems = [
-  { key: '/overview', label: '总览', icon: <EyeOutlined /> },
-  { key: '/monitor', label: '监控选择', icon: <DeploymentUnitOutlined /> },
-  { key: '/alerts', label: '重点预警', icon: <BellOutlined /> },
-  { key: '/model-center', label: '模型中心', icon: <RadarChartOutlined /> }
-];
+import { appPages } from '@/router/pages';
 
 function formatTime(date: Date) {
   const h = String(date.getHours()).padStart(2, '0');
@@ -55,11 +46,11 @@ export function MainLayout() {
         </div>
 
         <nav className="header-nav">
-          {navItems.map((item) => (
+          {appPages.map((item) => (
             <button
-              key={item.key}
-              className={`nav-tab ${location.pathname === item.key ? 'active' : ''}`}
-              onClick={() => navigate(item.key)}
+              key={item.path}
+              className={`nav-tab ${location.pathname === item.path ? 'active' : ''}`}
+              onClick={() => navigate(item.path)}
             >
               {item.icon}
               <span>{item.label}</span>
