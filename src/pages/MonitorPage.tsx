@@ -1,4 +1,5 @@
-import { Tag } from 'antd';
+import { Segmented, Tag } from 'antd';
+import { useState } from 'react';
 import { SectionCard } from '@/components/SectionCard';
 import { CameraListPanel } from '@/components/CameraListPanel';
 import { CameraMapPanel } from '@/components/CameraMapPanel';
@@ -8,6 +9,7 @@ import { useAppStore } from '@/store/useAppStore';
 
 export function MonitorPage() {
   const { cameras, activeCameraId, analysis, setActiveCamera } = useAppStore();
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const activeCamera = cameras.find((item) => item.id === activeCameraId) ?? cameras[0];
 
   return (
@@ -35,28 +37,49 @@ export function MonitorPage() {
       </div>
 
       <div className="monitor-stage">
-        <SectionCard className="section-fill" title="监控点位地图">
-          <CameraMapPanel
-            cameras={cameras}
-            activeCameraId={activeCameraId}
-            onSelect={setActiveCamera}
-          />
+        <SectionCard
+          className="section-fill"
+          title="监控选择区"
+          extra={
+            <Segmented
+              size="small"
+              value={viewMode}
+              options={[
+                { label: '地图定位', value: 'map' },
+                { label: '设备列表', value: 'list' }
+              ]}
+              onChange={(value) => setViewMode(value as 'map' | 'list')}
+            />
+          }
+        >
+          {viewMode === 'map' ? (
+            <CameraMapPanel
+              cameras={cameras}
+              activeCameraId={activeCameraId}
+              onSelect={setActiveCamera}
+            />
+          ) : (
+            <CameraListPanel
+              cameras={cameras}
+              activeCameraId={activeCameraId}
+              onSelect={setActiveCamera}
+            />
+          )}
         </SectionCard>
 
-        <SectionCard className="section-fill" title="监控点位列表">
-          <CameraListPanel
-            cameras={cameras}
-            activeCameraId={activeCameraId}
-            onSelect={setActiveCamera}
-          />
-        </SectionCard>
-        <SectionCard className="section-fill" title="单点实时监控详情">
-          <VideoPanel camera={activeCamera} subtitle="点击地图或列表切换当前监控点位" />
-        </SectionCard>
+        <div className="monitor-detail-stack">
+          <SectionCard className="section-fill" title="单点实时监控详情">
+            <VideoPanel
+              camera={activeCamera}
+              subtitle="点击地图或列表切换当前监控点位"
+              showInfoStrip={false}
+            />
+          </SectionCard>
 
-        <SectionCard className="section-fill" title="VLM 实时分析">
-          <VlmAnalysisPanel analysis={analysis} compact />
-        </SectionCard>
+          <SectionCard className="section-fill" title="VLM 实时分析">
+            <VlmAnalysisPanel analysis={analysis} variant="compact" />
+          </SectionCard>
+        </div>
       </div>
     </div>
   );

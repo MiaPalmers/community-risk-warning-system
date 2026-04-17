@@ -34,7 +34,7 @@ export function CameraListPanel({ cameras, activeCameraId, onSelect }: CameraLis
 
             <div className="camera-card-meta">
               <span>{item.area}</span>
-              <span>{item.scene}</span>
+              <span>{item.id}</span>
             </div>
 
             <div className="camera-card-footer">
@@ -50,7 +50,6 @@ export function CameraListPanel({ cameras, activeCameraId, onSelect }: CameraLis
                 }
                 text={<span className="camera-badge-text">{riskLevelTextMap[item.level]}</span>}
               />
-              <span className="camera-card-footnote">今日事件 {item.todayEvents}</span>
             </div>
           </button>
         ))}

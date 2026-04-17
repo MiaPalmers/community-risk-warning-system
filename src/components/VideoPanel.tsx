@@ -6,11 +6,12 @@ import { LiveVideoPlayer } from '@/components/player/LiveVideoPlayer';
 interface VideoPanelProps {
   camera: CameraPoint;
   subtitle?: string;
+  showInfoStrip?: boolean;
 }
 
-export function VideoPanel({ camera, subtitle }: VideoPanelProps) {
+export function VideoPanel({ camera, subtitle, showInfoStrip = true }: VideoPanelProps) {
   return (
-    <div className="video-panel">
+    <div className={`video-panel ${showInfoStrip ? '' : 'condensed'}`}>
       <div className="video-toolbar">
         <div>
           <div className="video-title">{camera.name}</div>
@@ -38,24 +39,26 @@ export function VideoPanel({ camera, subtitle }: VideoPanelProps) {
         </div>
       </div>
 
-      <div className="video-info-strip">
-        <div className="video-info-pill">
-          <span>所属分区</span>
-          <strong>{camera.area}</strong>
+      {showInfoStrip ? (
+        <div className="video-info-strip">
+          <div className="video-info-pill">
+            <span>所属分区</span>
+            <strong>{camera.area}</strong>
+          </div>
+          <div className="video-info-pill">
+            <span>场景类型</span>
+            <strong>{camera.scene}</strong>
+          </div>
+          <div className="video-info-pill">
+            <span>今日事件</span>
+            <strong>{camera.todayEvents}</strong>
+          </div>
+          <div className="video-info-pill">
+            <span>最近告警</span>
+            <strong>{camera.lastAlertTime.slice(11)}</strong>
+          </div>
         </div>
-        <div className="video-info-pill">
-          <span>场景类型</span>
-          <strong>{camera.scene}</strong>
-        </div>
-        <div className="video-info-pill">
-          <span>今日事件</span>
-          <strong>{camera.todayEvents}</strong>
-        </div>
-        <div className="video-info-pill">
-          <span>最近告警</span>
-          <strong>{camera.lastAlertTime.slice(11)}</strong>
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }

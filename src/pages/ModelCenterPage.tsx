@@ -69,7 +69,7 @@ export function ModelCenterPage() {
           <div className="page-kicker">MODEL AND PROXY CENTER</div>
           <div className="page-title-row">
             <h2>模型接入中心</h2>
-            <p>以 2x2 固定信息板呈现运行配置、代理状态、请求示例与接入步骤，适配大屏演示场景。</p>
+            <p>以更轻量的双列信息板呈现运行配置、代理状态、请求示例与接入步骤。</p>
           </div>
         </div>
 

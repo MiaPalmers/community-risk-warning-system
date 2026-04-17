@@ -1,4 +1,4 @@
-import { Card, Empty, Tag } from 'antd';
+import { Empty, Tag } from 'antd';
 import { useMemo } from 'react';
 import { RiskEventDetailPanel } from '@/components/RiskEventDetailPanel';
 import { SectionCard } from '@/components/SectionCard';
@@ -44,33 +44,46 @@ export function AlertsPage() {
 
       {events.length ? (
         <div className="alerts-stage">
-          <div className="alerts-board">
-            {events.map((event) => (
-              <Card
-                key={event.id}
-                variant="borderless"
-                className={`event-card ${event.id === currentEvent?.id ? 'selected' : ''}`}
-                title={event.title}
-                extra={
-                  <Tag color={event.level === 'A' ? 'error' : event.level === 'B' ? 'warning' : 'processing'}>
-                    {event.level}级
-                  </Tag>
-                }
-                onClick={() => handleSelect(event.id)}
-              >
-                <div className="event-score">{event.riskScore}</div>
-                <div className="event-summary">{event.summary}</div>
-                <div className="event-meta">{event.occurredAt}</div>
-                <div className="event-meta">{event.cameraName}</div>
-                <div className="event-tag-row">
-                  {event.tags.map((tag) => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </div>
-                <div className="event-status">状态：{eventStatusTextMap[event.status]}</div>
-              </Card>
-            ))}
-          </div>
+          <SectionCard className="section-fill" title="预警事件列表">
+            <div className="alerts-list">
+              {events.map((event) => (
+                <button
+                  key={event.id}
+                  type="button"
+                  className={`alert-list-item ${event.id === currentEvent?.id ? 'selected' : ''}`}
+                  onClick={() => handleSelect(event.id)}
+                >
+                  <div className="alert-list-head">
+                    <div className="alert-list-heading">
+                      <div className="alert-list-title">{event.title}</div>
+                      <div className="alert-list-meta">{event.occurredAt}</div>
+                    </div>
+                    <div className="alert-list-score">{event.riskScore}</div>
+                  </div>
+
+                  <div className="alert-list-summary">{event.summary}</div>
+
+                  <div className="alert-list-foot">
+                    <div className="alert-list-tags">
+                      {event.tags.slice(0, 2).map((tag) => (
+                        <Tag key={tag}>{tag}</Tag>
+                      ))}
+                    </div>
+                    <div className="alert-list-status">
+                      <span>{event.cameraName}</span>
+                      <span>状态：{eventStatusTextMap[event.status]}</span>
+                      <Tag
+                        color={event.level === 'A' ? 'error' : event.level === 'B' ? 'warning' : 'processing'}
+                        style={{ margin: 0 }}
+                      >
+                        {event.level}级
+                      </Tag>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </SectionCard>
 
           <SectionCard className="section-fill" title="事件详情与处置">
             <RiskEventDetailPanel

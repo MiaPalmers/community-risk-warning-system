@@ -78,7 +78,7 @@ export function RiskEventDetailPanel({ event, onMarkDone }: RiskEventDetailPanel
       </div>
 
       <div className="event-analysis-shell">
-        <VlmAnalysisPanel analysis={event.analysis} compact />
+        <VlmAnalysisPanel analysis={event.analysis} variant="summary" />
       </div>
 
       <div className="drawer-footer">
