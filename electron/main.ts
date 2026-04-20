@@ -1,11 +1,23 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { is } from '@electron-toolkit/utils'
 import path from 'node:path'
+import fs from 'node:fs'
 import dotenv from 'dotenv'
 import { createQwenProxyApp, loadQwenProxyConfig } from '../server/qwenProxy.js'
 
-dotenv.config({ path: '.env.server', override: false })
-dotenv.config({ path: '.env', override: false })
+const baseDir = app.isPackaged ? path.dirname(app.getPath('exe')) : app.getAppPath()
+
+const envServerPath = path.resolve(baseDir, '.env.server')
+if (fs.existsSync(envServerPath)) {
+  dotenv.config({ path: envServerPath, override: false })
+}
+
+if (!app.isPackaged) {
+  const envPath = path.resolve(baseDir, '.env')
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath, override: false })
+  }
+}
 
 const server = createQwenProxyApp(loadQwenProxyConfig())
 

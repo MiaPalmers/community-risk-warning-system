@@ -25,6 +25,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create .env from secrets
+        shell: pwsh
+        run: |
+          $envContent = '${{ secrets.ENV_FILE }}'
+          if ($envContent) {
+            Set-Content -Path '.env' -Value $envContent -NoNewline
+          }
+
       - name: Build
         run: npm run build
 

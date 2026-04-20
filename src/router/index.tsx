@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Spin } from 'antd';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createHashRouter, Navigate } from 'react-router-dom';
 import { MainLayout } from '@/layouts/MainLayout';
 import { appPages, defaultRoute } from '@/router/pages';
 
@@ -27,7 +27,7 @@ function withSuspense(element: React.ReactNode) {
   return <Suspense fallback={<RouteFallback />}>{element}</Suspense>;
 }
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/',
     element: <MainLayout />,

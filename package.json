@@ -59,7 +59,8 @@
     "files": [
       "dist/main/**/*",
       "dist/preload/**/*",
-      "dist/renderer/**/*"
+      "dist/renderer/**/*",
+      ".env.server.example"
     ],
     "win": {
       "target": [
