@@ -40,6 +40,11 @@
     "typescript": "^5.8.3",
     "vite": "^7.0.4"
   },
+  "overrides": {
+    "cacache": {
+      "glob": "^13.0.0"
+    }
+  },
   "build": {
     "appId": "com.community-risk-warning.app",
     "productName": "险封·社区风险预警平台",
