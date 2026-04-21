@@ -1,6 +1,6 @@
 import { Tag } from 'antd';
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 
 function formatTime(date: Date) {
   const h = String(date.getHours()).padStart(2, '0');
@@ -38,7 +38,15 @@ export function MainLayout() {
         </div>
 
         <div className="header-center">
-          <div className="header-title">社区风险预警平台</div>
+          <NavLink to="/overview" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
+            总览
+          </NavLink>
+          <NavLink to="/monitor" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
+            监控选择
+          </NavLink>
+          <NavLink to="/alerts" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
+            重点预警
+          </NavLink>
         </div>
 
         <div className="header-right">
