@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Tag } from 'antd';
 import { useLocalCamera } from '@/hooks/useLocalCamera';
 import { useAppStore } from '@/store/useAppStore';
+import { riskColorMap, riskLevelTextMap } from '@/utils/risk';
 
 export function MonitorPage() {
   const { stream, loading, error } = useLocalCamera();
@@ -26,15 +27,28 @@ export function MonitorPage() {
 
   return (
     <div className="monitor-layout">
-      <div className="monitor-video-col">
-        {loading && (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            正在连接摄像头...
+      {/* 左栏：视频画面 */}
+      <div className="panel monitor-video-col">
+        <div className="monitor-video-toolbar">
+          <div>
+            <div className="monitor-video-toolbar-title">实时监控</div>
+            <div className="monitor-video-toolbar-sub">
+              {activeCamera?.name ?? '本地摄像头'} · {activeCamera?.area ?? ''}
+            </div>
           </div>
-        )}
-        {error && <div className="monitor-video-error">{error}</div>}
-        {stream && (
-          <>
+          <Tag color={activeCamera?.status === 'online' ? 'success' : 'default'}>
+            {activeCamera?.status === 'online' ? '在线' : '离线'}
+          </Tag>
+        </div>
+
+        <div className="monitor-video-stage">
+          {loading && (
+            <div className="monitor-video-loading">正在启动摄像头…</div>
+          )}
+          {error && (
+            <div className="monitor-video-error">{error}</div>
+          )}
+          {stream && (
             <video
               ref={videoRef}
               autoPlay
@@ -42,34 +56,45 @@ export function MonitorPage() {
               muted
               className="monitor-video-element"
             />
+          )}
+          {stream && (
             <div className="monitor-video-overlay">
-              <div>实时监控</div>
-              <div>{activeCamera?.name ?? '未知摄像头'}</div>
-              <div>{timestamp}</div>
+              <span className="monitor-video-overlay-name">
+                {activeCamera?.name ?? '本地摄像头'}
+              </span>
+              <span className="monitor-video-overlay-time">{timestamp}</span>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
 
-      <div className="monitor-list-col">
-        <div className="panel">
-          <div className="panel-title">监控点位列表</div>
-          <div className="monitor-camera-list">
-            {cameras.map((camera) => (
-              <div
-                key={camera.id}
-                className={`monitor-camera-item ${camera.id === activeCameraId ? 'active' : ''}`}
-                onClick={() => setActiveCamera(camera.id)}
-              >
-                <div>{camera.name}</div>
-                <div>{camera.area}</div>
-                <Tag color={camera.status === 'online' ? 'success' : 'default'}>
-                  {camera.status === 'online' ? '在线' : '离线'}
-                </Tag>
-                <div>{camera.riskScore}</div>
+      {/* 右栏：点位列表 */}
+      <div className="panel monitor-list-col">
+        <div className="panel-title">监控点位列表</div>
+        <div className="monitor-camera-list">
+          {cameras.map((camera) => (
+            <div
+              key={camera.id}
+              className={`monitor-camera-item ${camera.id === activeCameraId ? 'active' : ''}`}
+              onClick={() => setActiveCamera(camera.id)}
+            >
+              <div className="monitor-camera-info">
+                <div className="monitor-camera-name">{camera.name}</div>
+                <div className="monitor-camera-meta">
+                  {camera.area} · {camera.scene}
+                </div>
               </div>
-            ))}
-          </div>
+              <Tag color={camera.status === 'online' ? 'success' : 'default'}>
+                {camera.status === 'online' ? '在线' : '离线'}
+              </Tag>
+              <div className="monitor-camera-score">
+                <span className="monitor-camera-score-value" style={{ color: riskColorMap[camera.level] }}>
+                  {camera.riskScore}
+                </span>
+                <span className="monitor-camera-score-label">{riskLevelTextMap[camera.level]}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

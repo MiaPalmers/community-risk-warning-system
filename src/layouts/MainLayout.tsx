@@ -32,7 +32,7 @@ export function MainLayout() {
         <div className="header-left">
           <div className="brand-logo">险</div>
           <div className="brand-block">
-            <div className="brand-title">凝危无惧 —— 文明养犬数字治平台终端</div>
+            <div className="brand-title">社区风险预警监控系统</div>
             <div className="brand-subtitle">VLM + AGENT SYSTEM</div>
           </div>
         </div>
