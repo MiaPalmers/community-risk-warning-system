@@ -1,73 +1,52 @@
+import { useMemo } from 'react';
 import { Tag } from 'antd';
 import { CameraMapPanel } from '@/components/CameraMapPanel';
 import { VlmAnalysisPanel } from '@/components/VlmAnalysisPanel';
+import { VideoPanel } from '@/components/VideoPanel';
 import { useAppStore } from '@/store/useAppStore';
-import { equipmentStats, riskLevelStats, eventTypeStats } from '@/data/mock';
 import { riskGradeColorMap } from '@/utils/risk';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 
 export function OverviewPage() {
-  const { cameras, activeCameraId, events, analysis, setActiveCamera, selectEvent } = useAppStore();
+  const { cameras, activeCameraId, analysis, events, selectedEventId, setActiveCamera, selectEvent } =
+    useAppStore();
 
-  const sortedEvents = [...events].sort((a, b) => b.riskScore - a.riskScore);
-  const maxEventCount = Math.max(...eventTypeStats.map((item) => item.count));
+  const activeCamera = cameras.find((c) => c.id === activeCameraId) || cameras[0];
 
-  const tickerItems = events.map((event) => `${event.occurredAt} ${event.cameraName} ${event.title}`).join('    ●    ');
-  const tickerText = `${tickerItems}    ●    ${tickerItems}`;
+  const sortedEvents = useMemo(
+    () => [...events].sort((a, b) => b.riskScore - a.riskScore),
+    [events]
+  );
 
   return (
-    <>
-      <div className="left-col">
-        <div className="panel">
-          <div className="panel-title">设备状态分析</div>
-          <div className="status-grid">
-            {equipmentStats.map((item) => (
-              <div key={item.label} className="status-card">
-                <div className="status-card-icon">{item.icon}</div>
-                <div className="status-card-value" style={{ color: item.color }}>{item.value}</div>
-                <div className="status-card-label">{item.label}</div>
-              </div>
-            ))}
-          </div>
+    <div className="overview-grid">
+      {/* LEFT COLUMN */}
+      <div className="overview-left">
+        <div className="panel" style={{ padding: 0, flex: 1, minHeight: 0 }}>
+          {activeCamera && <VideoPanel camera={activeCamera} showInfoStrip={false} />}
         </div>
 
-        <div className="panel">
-          <div className="panel-title">风险等级分布</div>
-          <div className="risk-level-list">
-            {riskLevelStats.map((item) => (
-              <div key={item.level} className="risk-level-item">
-                <div className="risk-level-color" style={{ background: item.color }} />
-                <div className="risk-level-info">
-                  <div className="risk-level-name">{item.level}</div>
-                  <div className="risk-level-bar-bg">
-                    <div className="risk-level-bar" style={{ width: `${item.percent}%`, background: item.color }} />
-                  </div>
-                </div>
-                <div className="risk-level-count">{item.count}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="panel">
-          <div className="panel-title">事件类型统计</div>
-          <div className="bar-chart">
-            {eventTypeStats.map((item) => (
-              <div key={item.type} className="bar-chart-item">
-                <div className="bar-chart-label">{item.type}</div>
-                <div className="bar-chart-track">
-                  <div className="bar-chart-fill" style={{ width: `${(item.count / maxEventCount) * 100}%`, background: item.color }}>
-                    <span className="bar-chart-value">{item.count}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="panel" style={{ flex: 1, minHeight: 0 }}>
+          <div className="panel-title">VLM 实时数据</div>
+          <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            <VlmAnalysisPanel analysis={analysis} variant="compact" />
           </div>
         </div>
       </div>
 
-      <div className="center-col">
-        <div className="panel" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <div className="panel-title">GIS 联动与点位态势</div>
+      {/* CENTER COLUMN */}
+      <div className="overview-center">
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          <div className="panel-title">主监控地图 (显示摄像头位置)</div>
           <div className="map-container">
             <CameraMapPanel
               cameras={cameras}
@@ -77,60 +56,113 @@ export function OverviewPage() {
             />
           </div>
         </div>
-        <div className="alert-ticker">
-          <div className="alert-ticker-label">⚡ 实时预警</div>
-          <div className="alert-ticker-content">
-            <div className="alert-ticker-scroll">{tickerText}</div>
+
+        <div className="panel" style={{ flex: 1, minHeight: 0 }}>
+          <div className="panel-title">数据分析板块</div>
+          <div style={{ flex: 1, display: 'flex', gap: '20px', minHeight: 0 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8, textAlign: 'center' }}>
+                风险构成分析环形图
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={analysis.breakdown}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="50%"
+                      outerRadius="80%"
+                      paddingAngle={5}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {analysis.breakdown.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={['#00c3ff', '#3b82f6', '#ff8c00', '#f43f5e'][index % 4]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ background: 'rgba(8, 15, 29, 0.9)', border: '1px solid rgba(0, 195, 255, 0.2)' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div style={{ borderLeft: '1px solid rgba(255,255,255,0.06)', margin: '10px 0' }} />
+
+            <div style={{ flex: 1.5, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8, textAlign: 'center' }}>
+                风险趋势折线图
+              </div>
+              <div style={{ flex: 1, minHeight: 0, paddingRight: 10 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={analysis.trend}>
+                    <XAxis
+                      dataKey="time"
+                      stroke="rgba(255,255,255,0.3)"
+                      tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: 'rgba(8, 15, 29, 0.9)', border: '1px solid rgba(0, 195, 255, 0.2)' }}
+                      itemStyle={{ color: '#00c3ff' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#00c3ff"
+                      strokeWidth={3}
+                      dot={{ fill: '#00c3ff', stroke: '#080f1d', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="right-col">
-        <div className="panel">
-          <div className="panel-title">VLM 实时研判</div>
-          <VlmAnalysisPanel analysis={analysis} variant="summary" />
-        </div>
-
+      {/* RIGHT COLUMN */}
+      <div className="overview-right">
         <div className="panel" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <div className="panel-title">预警事件排行</div>
-          <div className="event-rank-list">
+          <div className="panel-title">重点预警</div>
+          <div className="overview-alert-list">
             {sortedEvents.map((event, index) => (
               <div
                 key={event.id}
-                className={`event-rank-item ${event.id === events[0]?.id ? 'active' : ''}`}
-                onClick={() => selectEvent(event.id)}
+                className={`overview-alert-item${selectedEventId === event.id ? ' active' : ''}`}
+                onClick={() => {
+                  selectEvent(event.id);
+                  setActiveCamera(event.cameraId);
+                }}
               >
-                <div className={`event-rank-num ${index < 3 ? 'top-3' : ''}`}>
-                  {String(index + 1).padStart(2, '0')}
+                <span className={`overview-alert-rank${index < 3 ? ' top-3' : ''}`}>
+                  {index + 1}
+                </span>
+                <div className="overview-alert-info">
+                  <div className="overview-alert-title">{event.title}</div>
+                  <div className="overview-alert-meta">
+                    <Tag
+                      color={riskGradeColorMap[event.level]}
+                      style={{ marginRight: 4, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}
+                    >
+                      {event.level}级
+                    </Tag>
+                    {event.cameraName} · {event.area}
+                  </div>
                 </div>
-                <div className="event-rank-info">
-                  <div className="event-rank-title">{event.title}</div>
-                  <div className="event-rank-meta">{event.cameraName} · {event.occurredAt}</div>
-                </div>
-                <div className="event-rank-score">{event.riskScore}</div>
-                <Tag
-                  color={event.level === 'A' ? 'error' : event.level === 'B' ? 'warning' : 'processing'}
-                  style={{ margin: 0, fontSize: 10 }}
-                >
-                  {event.level}级
-                </Tag>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="panel">
-          <div className="panel-title">风险趋势</div>
-          <div className="trend-chart">
-            {analysis.trend.map((point) => (
-              <div key={point.time} className="trend-node">
-                <span className="trend-point" style={{ bottom: `${point.value}%` }} />
-                <span className="trend-label">{point.time}</span>
+                <span className="overview-alert-score">{event.riskScore}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

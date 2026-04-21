@@ -32,17 +32,17 @@ export function MainLayout() {
         <div className="header-left">
           <div className="brand-logo">险</div>
           <div className="brand-block">
-            <div className="brand-title">险封·社区风险预警</div>
+            <div className="brand-title">凝危无惧 —— 文明养犬数字治平台终端</div>
             <div className="brand-subtitle">VLM + AGENT SYSTEM</div>
           </div>
         </div>
 
         <div className="header-center">
-          <NavLink to="/overview" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
-            总览
-          </NavLink>
           <NavLink to="/monitor" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
             监控选择
+          </NavLink>
+          <NavLink to="/overview" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
+            总览
           </NavLink>
           <NavLink to="/alerts" className={({ isActive }) => `header-nav-btn ${isActive ? 'active' : ''}`}>
             重点预警
