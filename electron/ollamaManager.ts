@@ -5,7 +5,7 @@ import fs from 'node:fs'
 
 const VLM_PORT = 11434
 const VLM_BASE = `http://127.0.0.1:${VLM_PORT}`
-const MODEL_FILE = 'Qwen3.5-4B-Q4_K_M.gguf'
+const MODEL_FILE = 'Qwen3.5-4B.Q4_K_M.gguf'
 const MMPROJ_FILE = 'mmproj-BF16.gguf'
 
 let serverProcess: ChildProcess | null = null

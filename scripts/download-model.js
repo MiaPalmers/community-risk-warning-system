@@ -11,10 +11,11 @@ const LLAMA_CPP_CUDA_URL = `https://github.com/ggml-org/llama.cpp/releases/downl
 const CUDART_ZIP = 'cudart-llama-bin-win-cuda-12.4-x64.zip'
 const CUDART_URL = `https://github.com/ggml-org/llama.cpp/releases/download/b8864/${CUDART_ZIP}`
 
-const MODEL_URL = 'https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf'
-const MMPROJ_URL = 'https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/mmproj-BF16.gguf'
+const MODEL_REPO = 'Jackrong/Qwen3.5-4B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF'
+const MODEL_URL = `https://huggingface.co/${MODEL_REPO}/resolve/main/Qwen3.5-4B.Q4_K_M.gguf`
+const MMPROJ_URL = `https://huggingface.co/${MODEL_REPO}/resolve/main/mmproj-BF16.gguf`
 
-const MODEL_FILE = 'Qwen3.5-4B-Q4_K_M.gguf'
+const MODEL_FILE = 'Qwen3.5-4B.Q4_K_M.gguf'
 const MMPROJ_FILE = 'mmproj-BF16.gguf'
 
 function run(cmd) {

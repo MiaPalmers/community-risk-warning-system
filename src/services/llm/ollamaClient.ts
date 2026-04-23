@@ -2,7 +2,7 @@ import { http } from '@/services/http'
 import type { VlmAnalysis, DetectionBox } from '@/types'
 
 const OLLAMA_PROXY_PATH = '/api/ollama/chat/completions'
-const OLLAMA_MODEL = 'qwen3.5:4b-q4_K_M'
+export const OLLAMA_MODEL = 'jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m'
 
 const SYSTEM_PROMPT = `/no_think
 你是社区安全监控系统。分析摄像头画面，返回纯JSON，不要任何其他文字。

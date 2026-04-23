@@ -18,6 +18,12 @@ describe('qwenProxy', () => {
     expect(config.qwenTimeout).toBe(12000);
   });
 
+  it('defaults to the Jackrong distilled Qwen3.5 4B model', () => {
+    const config = loadQwenProxyConfig({});
+
+    expect(config.qwenModel).toBe('jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m');
+  });
+
   it('uses the default model only when the request body omits model', () => {
     expect(buildQwenRequestBody({ messages: [] }, 'qwen-default')).toEqual({
       model: 'qwen-default',

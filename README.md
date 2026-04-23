@@ -82,7 +82,7 @@ VITE_BAIDU_MAP_CENTER_LNG=118.796877
 VITE_BAIDU_MAP_CENTER_LAT=32.060255
 VITE_BAIDU_MAP_ZOOM=16
 VITE_QWEN_PROXY_PATH=/api/qwen/chat/completions
-VITE_QWEN_MODEL=qwen3.5-9b-uncensored-hauhaucs-aggressive
+VITE_QWEN_MODEL=jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m
 VITE_DEMO_STREAM_URL=
 VITE_DEMO_STREAM_TYPE=flv
 ```
@@ -102,7 +102,7 @@ SERVER_PORT=8787
 CORS_ORIGIN=http://localhost:5173
 QWEN_BASE_URL=http://127.0.0.1:1234/v1
 QWEN_API_KEY=
-QWEN_MODEL=qwen3.5-9b-uncensored-hauhaucs-aggressive
+QWEN_MODEL=jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m
 QWEN_TIMEOUT=60000
 ```
 

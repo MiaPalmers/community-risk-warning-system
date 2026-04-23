@@ -41,7 +41,7 @@ export function loadQwenProxyConfig(env = process.env) {
     corsOrigin: parseCorsOrigin(env.CORS_ORIGIN || 'http://localhost:5173'),
     qwenBaseUrl: (env.QWEN_BASE_URL || '').replace(/\/$/, ''),
     qwenApiKey: env.QWEN_API_KEY || '',
-    qwenModel: env.QWEN_MODEL || 'qwen3.5-vl',
+    qwenModel: env.QWEN_MODEL || 'jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m',
     qwenTimeout: Number(env.QWEN_TIMEOUT || 60000)
   };
 }
