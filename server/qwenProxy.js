@@ -8,6 +8,7 @@ import {
   QWEN_CHAT_COMPLETIONS_ROUTE
 } from '../shared/apiRoutes.js';
 import { DEFAULT_VLM_MODEL_ALIAS } from '../shared/vlmModelConfig.js';
+import { loadVlmRuntimeConfig } from '../shared/vlmRuntimeConfig.js';
 
 function parseCorsOrigin(rawOrigin = 'http://localhost:5173') {
   const trimmed = rawOrigin.trim();
@@ -21,36 +22,68 @@ function parseCorsOrigin(rawOrigin = 'http://localhost:5173') {
     .filter(Boolean);
 }
 
-export function isAllowedCorsOrigin(origin, corsOrigin) {
+function parseBoolean(value, fallback = false) {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+
+  return String(value).toLowerCase() === 'true';
+}
+
+function parseInteger(value, fallback, min = 1) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < min) {
+    return fallback;
+  }
+
+  return parsed;
+}
+
+function normalizeHost(host) {
+  const trimmed = String(host || '').trim();
+  return trimmed || '127.0.0.1';
+}
+
+export function isAllowedCorsOrigin(origin, corsOrigin, allowLocalFileOrigins = false) {
   if (corsOrigin === true) {
     return true;
   }
 
   if (!origin || origin === 'null' || origin.startsWith('file://')) {
-    return true;
+    return allowLocalFileOrigins;
   }
 
   return corsOrigin.includes(origin);
 }
 
-function createCorsOriginOption(corsOrigin) {
-  if (corsOrigin === true) {
+function createCorsOriginOption(config) {
+  if (config.corsOrigin === true) {
     return true;
   }
 
   return (origin, callback) => {
-    callback(null, isAllowedCorsOrigin(origin, corsOrigin));
+    callback(null, isAllowedCorsOrigin(origin, config.corsOrigin, config.allowLocalFileOrigins));
   };
 }
 
 export function loadQwenProxyConfig(env = process.env) {
+  const vlmRuntimeConfig = loadVlmRuntimeConfig(env);
+
   return {
-    port: Number(env.SERVER_PORT || 8787),
+    host: normalizeHost(env.SERVER_HOST || '127.0.0.1'),
+    port: parseInteger(env.SERVER_PORT, 8787),
     corsOrigin: parseCorsOrigin(env.CORS_ORIGIN || 'http://localhost:5173'),
+    allowLocalFileOrigins: parseBoolean(env.ALLOW_LOCAL_FILE_ORIGINS, false),
     qwenBaseUrl: (env.QWEN_BASE_URL || '').replace(/\/$/, ''),
     qwenApiKey: env.QWEN_API_KEY || '',
     qwenModel: env.QWEN_MODEL || DEFAULT_VLM_MODEL_ALIAS,
-    qwenTimeout: Number(env.QWEN_TIMEOUT || 60000)
+    qwenTimeout: parseInteger(env.QWEN_TIMEOUT, 60000),
+    requestBodyLimit: env.REQUEST_BODY_LIMIT || '8mb',
+    chatRequestsPerMinute: parseInteger(env.CHAT_REQUESTS_PER_MINUTE, 30, 0),
+    maxChatMessages: parseInteger(env.MAX_CHAT_MESSAGES, 16),
+    maxChatTokens: parseInteger(env.MAX_CHAT_TOKENS, 2048),
+    logModelOutput: parseBoolean(env.LOG_MODEL_OUTPUT, false),
+    ollamaBaseUrl: `http://${vlmRuntimeConfig.host}:${vlmRuntimeConfig.port}`
   };
 }
 
@@ -90,18 +123,96 @@ export function buildProxyErrorResponse(error, options) {
   };
 }
 
+export function validateChatCompletionPayload(body = {}, config = loadQwenProxyConfig()) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { ok: false, message: 'request body must be an object' };
+  }
+
+  if (!Array.isArray(body.messages) || body.messages.length === 0) {
+    return { ok: false, message: 'messages must be a non-empty array' };
+  }
+
+  if (body.messages.length > config.maxChatMessages) {
+    return { ok: false, message: 'messages exceeds the configured limit' };
+  }
+
+  if (body.max_tokens !== undefined && body.max_tokens !== null) {
+    const maxTokens = Number(body.max_tokens);
+    if (!Number.isFinite(maxTokens) || maxTokens < 1) {
+      return { ok: false, message: 'max_tokens must be a positive number' };
+    }
+
+    if (maxTokens > config.maxChatTokens) {
+      return { ok: false, message: 'max_tokens exceeds the configured limit' };
+    }
+  }
+
+  return { ok: true };
+}
+
+function createChatPayloadValidator(config) {
+  return (req, res, next) => {
+    const validation = validateChatCompletionPayload(req.body, config);
+    if (!validation.ok) {
+      return res.status(400).json({
+        error: {
+          message: validation.message,
+          type: 'invalid_request'
+        }
+      });
+    }
+
+    return next();
+  };
+}
+
+function createChatRateLimiter(config) {
+  const limit = config.chatRequestsPerMinute;
+  if (!limit) {
+    return (_req, _res, next) => next();
+  }
+
+  const windowMs = 60_000;
+  const buckets = new Map();
+
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = req.ip || req.socket?.remoteAddress || 'unknown';
+    const bucket = buckets.get(key);
+
+    if (!bucket || now - bucket.startedAt >= windowMs) {
+      buckets.set(key, { startedAt: now, count: 1 });
+      return next();
+    }
+
+    if (bucket.count >= limit) {
+      return res.status(429).json({
+        error: {
+          message: '请求过于频繁，请稍后再试',
+          type: 'rate_limit'
+        }
+      });
+    }
+
+    bucket.count += 1;
+    return next();
+  };
+}
+
 export function createQwenProxyApp(config = loadQwenProxyConfig()) {
   const app = express();
+  const chatRateLimiter = createChatRateLimiter(config);
+  const chatPayloadValidator = createChatPayloadValidator(config);
 
   app.use(
     cors({
-      origin: createCorsOriginOption(config.corsOrigin),
+      origin: createCorsOriginOption(config),
       credentials: config.corsOrigin !== true
     })
   );
-  app.use(express.json({ limit: '50mb' }));
+  app.use(express.json({ limit: config.requestBodyLimit }));
 
-  createOllamaProxyRoutes(app);
+  createOllamaProxyRoutes(app, config, chatRateLimiter, chatPayloadValidator);
 
   app.get(API_HEALTH_ROUTE, (_req, res) => {
     res.json({
@@ -113,7 +224,7 @@ export function createQwenProxyApp(config = loadQwenProxyConfig()) {
     });
   });
 
-  app.post(QWEN_CHAT_COMPLETIONS_ROUTE, async (req, res) => {
+  app.post(QWEN_CHAT_COMPLETIONS_ROUTE, chatRateLimiter, chatPayloadValidator, async (req, res) => {
     if (!config.qwenBaseUrl || !config.qwenApiKey) {
       return res.status(500).json({
         error: {
@@ -157,10 +268,12 @@ export function createQwenProxyApp(config = loadQwenProxyConfig()) {
   return app;
 }
 
-export function createOllamaProxyRoutes(app) {
-  const OLLAMA_BASE = 'http://127.0.0.1:11434';
+export function createOllamaProxyRoutes(app, config = loadQwenProxyConfig(), chatRateLimiter, chatPayloadValidator) {
+  const OLLAMA_BASE = config.ollamaBaseUrl || 'http://127.0.0.1:11434';
+  const rateLimiter = chatRateLimiter ?? createChatRateLimiter(config);
+  const payloadValidator = chatPayloadValidator ?? createChatPayloadValidator(config);
 
-  app.post(OLLAMA_CHAT_COMPLETIONS_ROUTE, async (req, res) => {
+  app.post(OLLAMA_CHAT_COMPLETIONS_ROUTE, rateLimiter, payloadValidator, async (req, res) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 120000);
 
@@ -173,11 +286,11 @@ export function createOllamaProxyRoutes(app) {
       });
 
       const text = await response.text();
-      const payload = parseProxyResponseText(text, (rawText) => {
-        console.error('[ollama-proxy] Non-JSON response:', rawText.slice(0, 500));
+      const payload = parseProxyResponseText(text, () => {
+        console.error('[ollama-proxy] Non-JSON response from upstream');
       });
 
-      if (payload?.choices?.[0]?.message?.content) {
+      if (config.logModelOutput && payload?.choices?.[0]?.message?.content) {
         const content = payload.choices[0].message.content;
         console.log('[ollama-proxy] Model output length:', content.length);
         if (content.length < 500) {

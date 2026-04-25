@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: resources/vlm
-          key: vlm-jackrong-qwen3.5-4b-q4km-mmproj-v2
+          key: vlm-jackrong-qwen3.5-4b-q4km-mmproj-sha256-v1
 
       - name: Download VLM model files
         if: steps.cache-vlm.outputs.cache-hit != 'true'
@@ -72,6 +72,22 @@ jobs:
 
           Write-Host "VLM files downloaded:"
           Get-ChildItem resources/vlm | Format-Table Name, Length
+
+      - name: Verify VLM model file hashes
+        shell: pwsh
+        run: |
+          $expectedModelSha256 = "de8cf2454c46ec34e6b991dc11f5dd42d543926272d8a59d36ceb5a2eaf7962a"
+          $expectedMmprojSha256 = "32c003c4247825cd765bd882c0c2d3b3b071f4f909aa00f9e1d6404ba2422cf0"
+
+          function Assert-FileSha256($Path, $Expected) {
+            $actual = (Get-FileHash -Algorithm SHA256 -Path $Path).Hash.ToLowerInvariant()
+            if ($actual -ne $Expected) {
+              throw "SHA256 mismatch for $Path. Expected $Expected, got $actual"
+            }
+          }
+
+          Assert-FileSha256 "resources/vlm/Qwen3.5-4B.Q4_K_M.gguf" $expectedModelSha256
+          Assert-FileSha256 "resources/vlm/mmproj-BF16.gguf" $expectedMmprojSha256
 
       - name: Build
         run: npm run build

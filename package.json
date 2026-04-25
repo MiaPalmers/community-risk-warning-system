@@ -2,6 +2,8 @@
   "name": "community-risk-warning-system",
   "private": true,
   "version": "0.2.0",
+  "description": "Electron desktop app for community risk warning and VLM-assisted monitoring.",
+  "author": "community-risk-warning-system contributors",
   "main": "./dist/main/main.cjs",
   "type": "module",
   "scripts": {
@@ -73,6 +75,7 @@
       ".env.server.example"
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "zip",

@@ -99,11 +99,24 @@ cp .env.server.example .env.server
 
 ```env
 SERVER_PORT=8787
+SERVER_HOST=127.0.0.1
 CORS_ORIGIN=http://localhost:5173
+ALLOW_LOCAL_FILE_ORIGINS=false
+REQUEST_BODY_LIMIT=8mb
+CHAT_REQUESTS_PER_MINUTE=30
+MAX_CHAT_MESSAGES=16
+MAX_CHAT_TOKENS=2048
+LOG_MODEL_OUTPUT=false
 QWEN_BASE_URL=http://127.0.0.1:1234/v1
 QWEN_API_KEY=
 QWEN_MODEL=jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m
 QWEN_TIMEOUT=60000
+VLM_HOST=127.0.0.1
+VLM_PORT=11434
+VLM_FORCE_CPU=false
+VLM_GPU_LAYERS=99
+VLM_CONTEXT_SIZE=4096
+VLM_STARTUP_TIMEOUT_MS=60000
 ```
 
 ## 5. Qwen 代理说明
@@ -121,6 +134,8 @@ POST /api/qwen/chat/completions
 ```text
 server/index.js
 ```
+
+独立代理默认只绑定 `127.0.0.1`，生产日志默认不输出模型正文；如需排障可临时设置 `LOG_MODEL_OUTPUT=true`。请求体大小、每分钟请求数、消息数量和 `max_tokens` 都可通过 `.env.server` 调整。
 
 你后续如果需要继续扩展，可以在这里接入：
 - SSE 流式输出

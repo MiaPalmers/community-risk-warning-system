@@ -128,7 +128,7 @@ export function parseVlmResponse(raw: string): { analysis: VlmAnalysis; boxes: D
 
   const jsonStr = extractJson(raw)
   if (!jsonStr) {
-    console.warn('[vlm-parser] No JSON found in response, raw length:', raw.length, 'first 200:', raw.slice(0, 200))
+    console.warn('[vlm-parser] No JSON found in response, raw length:', raw.length)
     return { analysis: fallback, boxes: [] }
   }
 
@@ -155,7 +155,7 @@ export function parseVlmResponse(raw: string): { analysis: VlmAnalysis; boxes: D
 
     return { analysis, boxes }
   } catch (e) {
-    console.warn('[vlm-parser] JSON parse failed:', e instanceof Error ? e.message : e, 'jsonStr:', jsonStr.slice(0, 300))
+    console.warn('[vlm-parser] JSON parse failed:', e instanceof Error ? e.message : e)
     return { analysis: fallback, boxes: [] }
   }
 }
@@ -186,6 +186,5 @@ export async function analyzeFrameWithOllama(
   })
 
   const content = response.data?.choices?.[0]?.message?.content ?? ''
-  console.log('[vlm-client] Raw response length:', content.length, 'first 200:', content.slice(0, 200))
   return parseVlmResponse(content)
 }

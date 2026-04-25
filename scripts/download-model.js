@@ -1,11 +1,14 @@
 import { execSync } from 'node:child_process'
-import { existsSync, mkdirSync } from 'node:fs'
+import { createReadStream, existsSync, mkdirSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   VLM_MODEL_FILE,
+  VLM_MODEL_SHA256,
   VLM_MODEL_URL,
   VLM_MMPROJ_FILE,
+  VLM_MMPROJ_SHA256,
   VLM_MMPROJ_URL
 } from '../shared/vlmModelConfig.js'
 
@@ -20,6 +23,26 @@ const CUDART_URL = `https://github.com/ggml-org/llama.cpp/releases/download/b886
 function run(cmd) {
   console.log(`> ${cmd}`)
   execSync(cmd, { stdio: 'inherit' })
+}
+
+function sha256File(path) {
+  return new Promise((resolve, reject) => {
+    const hash = createHash('sha256')
+    const stream = createReadStream(path)
+
+    stream.on('data', (chunk) => hash.update(chunk))
+    stream.on('error', reject)
+    stream.on('end', () => resolve(hash.digest('hex')))
+  })
+}
+
+async function verifySha256(path, expected) {
+  const actual = await sha256File(path)
+  if (actual !== expected) {
+    throw new Error(`SHA256 mismatch for ${path}: expected ${expected}, got ${actual}`)
+  }
+
+  console.log(`Verified SHA256 for ${path}`)
 }
 
 async function main() {
@@ -57,6 +80,7 @@ async function main() {
   } else {
     console.log(`${VLM_MODEL_FILE} already exists, skipping download`)
   }
+  await verifySha256(modelFile, VLM_MODEL_SHA256)
 
   if (!existsSync(mmprojFile)) {
     console.log(`\n=== Downloading ${VLM_MMPROJ_FILE} (~644 MB) ===`)
@@ -64,6 +88,7 @@ async function main() {
   } else {
     console.log(`${VLM_MMPROJ_FILE} already exists, skipping download`)
   }
+  await verifySha256(mmprojFile, VLM_MMPROJ_SHA256)
 
   console.log('\n=== Download complete ===')
   console.log(`Files in ${vlmDir}:`)

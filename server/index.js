@@ -9,6 +9,6 @@ for (const path of ['.env.server', '.env']) {
 const config = loadQwenProxyConfig();
 const app = createQwenProxyApp(config);
 
-app.listen(config.port, () => {
-  console.log(`Qwen proxy server is running at http://localhost:${config.port}`);
+app.listen(config.port, config.host, () => {
+  console.log(`Qwen proxy server is running at http://${config.host}:${config.port}`);
 });

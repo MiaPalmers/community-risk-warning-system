@@ -27,19 +27,24 @@ if (!app.isPackaged) {
   }
 }
 
-const server = createQwenProxyApp(loadQwenProxyConfig())
+const proxyConfig = {
+  ...loadQwenProxyConfig(),
+  host: '127.0.0.1',
+  allowLocalFileOrigins: true
+}
+const server = createQwenProxyApp(proxyConfig)
 
 let apiPort = 0
-const httpServer = server.listen(0, () => {
+const httpServer = server.listen(0, proxyConfig.host, () => {
   const addr = httpServer.address()
   if (addr && typeof addr === 'object') {
     apiPort = addr.port
   }
-  console.log(`Qwen proxy server is running at http://localhost:${apiPort}`)
+  console.log(`Qwen proxy server is running at http://${proxyConfig.host}:${apiPort}`)
 })
 
 ipcMain.handle('get-api-base', () => {
-  return `http://localhost:${apiPort}`
+  return `http://${proxyConfig.host}:${apiPort}`
 })
 
 ipcMain.handle('get-ollama-status', () => ({

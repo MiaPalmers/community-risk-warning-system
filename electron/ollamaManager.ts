@@ -9,15 +9,25 @@ import {
   type OllamaRuntimeStatus
 } from '../server/ollamaHealthStatus.js'
 import { VLM_MODEL_FILE, VLM_MMPROJ_FILE } from '../shared/vlmModelConfig.js'
+import { loadVlmRuntimeConfig, type VlmRuntimeConfig } from '../shared/vlmRuntimeConfig.js'
 
-const VLM_PORT = 11434
-const VLM_BASE = `http://127.0.0.1:${VLM_PORT}`
 let serverProcess: ChildProcess | null = null
 let ready = false
 let status: OllamaRuntimeStatus = 'starting'
+let runtimeConfig: VlmRuntimeConfig | null = null
+
+function getVlmRuntimeConfig(): VlmRuntimeConfig {
+  runtimeConfig ??= loadVlmRuntimeConfig(process.env)
+  return runtimeConfig
+}
+
+function getVlmBaseUrl(): string {
+  const config = getVlmRuntimeConfig()
+  return `http://${config.host}:${config.port}`
+}
 
 export function getOllamaBaseUrl(): string {
-  return VLM_BASE
+  return getVlmBaseUrl()
 }
 
 export function isOllamaReady(): boolean {
@@ -34,7 +44,7 @@ export function getOllamaRuntimeStatus(): OllamaRuntimeStatus {
 
 async function checkReady(): Promise<boolean> {
   try {
-    const res = await fetch(`${VLM_BASE}/health`, {
+    const res = await fetch(`${getVlmBaseUrl()}/health`, {
       signal: AbortSignal.timeout(2000)
     })
     const healthStatus = resolveOllamaHealthStatus(res.status)
@@ -75,6 +85,8 @@ function findVlmResources(): { serverExe: string; modelDir: string } | null {
 }
 
 export async function startOllama(): Promise<void> {
+  const vlmConfig = getVlmRuntimeConfig()
+
   if (await checkReady()) {
     ready = true
     console.log('[vlm] Already running')
@@ -103,10 +115,10 @@ export async function startOllama(): Promise<void> {
   const args = [
     '-m', modelPath,
     '--mmproj', mmprojPath,
-    '--port', String(VLM_PORT),
-    '--host', '127.0.0.1',
-    '-ngl', '99',
-    '-c', '4096',
+    '--port', String(vlmConfig.port),
+    '--host', vlmConfig.host,
+    '-ngl', String(vlmConfig.gpuLayers),
+    '-c', String(vlmConfig.contextSize),
     '--no-warmup'
   ]
 
@@ -149,7 +161,7 @@ export async function startOllama(): Promise<void> {
       status = 'error'
     })
 
-    await waitForReady(60_000)
+    await waitForReady(vlmConfig.startupTimeoutMs)
     ready = true
     status = 'ready'
     console.log('[vlm] Ready')

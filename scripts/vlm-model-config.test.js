@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   VLM_MODEL_FILE,
   VLM_MODEL_REPO,
-  VLM_MMPROJ_FILE
+  VLM_MODEL_SHA256,
+  VLM_MMPROJ_FILE,
+  VLM_MMPROJ_SHA256
 } from '../shared/vlmModelConfig.js';
 
 const oldUnslothRepo = 'unsloth/Qwen3.5-4B-GGUF';
@@ -20,6 +22,12 @@ describe('VLM model packaging configuration', () => {
     expect(workflow).toContain(VLM_MODEL_REPO);
     expect(workflow).toContain(VLM_MODEL_FILE);
     expect(workflow).toContain(VLM_MMPROJ_FILE);
+    expect(workflow).toContain(VLM_MODEL_SHA256);
+    expect(workflow).toContain(VLM_MMPROJ_SHA256);
+    expect(workflow.indexOf('Verify VLM model file hashes')).toBeGreaterThan(
+      workflow.indexOf('Download VLM model files')
+    );
+    expect(workflow.indexOf('Verify VLM model file hashes')).toBeLessThan(workflow.indexOf('- name: Build'));
     expect(workflow).not.toContain(oldUnslothRepo);
     expect(workflow).not.toContain(oldModelFile);
   });
@@ -31,8 +39,10 @@ describe('VLM model packaging configuration', () => {
     expect(downloadScript).toContain('../shared/vlmModelConfig.js');
     expect(downloadScript).toContain('VLM_MODEL_FILE');
     expect(downloadScript).toContain('VLM_MODEL_URL');
+    expect(downloadScript).toContain('VLM_MODEL_SHA256');
     expect(downloadScript).toContain('VLM_MMPROJ_FILE');
     expect(downloadScript).toContain('VLM_MMPROJ_URL');
+    expect(downloadScript).toContain('VLM_MMPROJ_SHA256');
     expect(ollamaManager).toContain('../shared/vlmModelConfig.js');
     expect(ollamaManager).toContain('VLM_MODEL_FILE');
     expect(ollamaManager).toContain('VLM_MMPROJ_FILE');
