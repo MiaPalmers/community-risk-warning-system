@@ -8,12 +8,10 @@ import {
   type GpuAvailability,
   type OllamaRuntimeStatus
 } from '../server/ollamaHealthStatus.js'
+import { VLM_MODEL_FILE, VLM_MMPROJ_FILE } from '../shared/vlmModelConfig.js'
 
 const VLM_PORT = 11434
 const VLM_BASE = `http://127.0.0.1:${VLM_PORT}`
-const MODEL_FILE = 'Qwen3.5-4B.Q4_K_M.gguf'
-const MMPROJ_FILE = 'mmproj-BF16.gguf'
-
 let serverProcess: ChildProcess | null = null
 let ready = false
 let status: OllamaRuntimeStatus = 'starting'
@@ -92,8 +90,8 @@ export async function startOllama(): Promise<void> {
   }
 
   const { serverExe, modelDir } = resources
-  const modelPath = path.join(modelDir, MODEL_FILE)
-  const mmprojPath = path.join(modelDir, MMPROJ_FILE)
+  const modelPath = path.join(modelDir, VLM_MODEL_FILE)
+  const mmprojPath = path.join(modelDir, VLM_MMPROJ_FILE)
 
   if (!fs.existsSync(modelPath)) {
     console.error(`[vlm] Model file not found: ${modelPath}`)

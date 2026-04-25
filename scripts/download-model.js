@@ -2,6 +2,12 @@ import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  VLM_MODEL_FILE,
+  VLM_MODEL_URL,
+  VLM_MMPROJ_FILE,
+  VLM_MMPROJ_URL
+} from '../shared/vlmModelConfig.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const vlmDir = join(__dirname, '..', 'resources', 'vlm')
@@ -10,13 +16,6 @@ const LLAMA_CPP_CUDA_ZIP = 'llama-b8864-bin-win-cuda-12.4-x64.zip'
 const LLAMA_CPP_CUDA_URL = `https://github.com/ggml-org/llama.cpp/releases/download/b8864/${LLAMA_CPP_CUDA_ZIP}`
 const CUDART_ZIP = 'cudart-llama-bin-win-cuda-12.4-x64.zip'
 const CUDART_URL = `https://github.com/ggml-org/llama.cpp/releases/download/b8864/${CUDART_ZIP}`
-
-const MODEL_REPO = 'Jackrong/Qwen3.5-4B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF'
-const MODEL_URL = `https://huggingface.co/${MODEL_REPO}/resolve/main/Qwen3.5-4B.Q4_K_M.gguf`
-const MMPROJ_URL = `https://huggingface.co/${MODEL_REPO}/resolve/main/mmproj-BF16.gguf`
-
-const MODEL_FILE = 'Qwen3.5-4B.Q4_K_M.gguf'
-const MMPROJ_FILE = 'mmproj-BF16.gguf'
 
 function run(cmd) {
   console.log(`> ${cmd}`)
@@ -27,8 +26,8 @@ async function main() {
   mkdirSync(vlmDir, { recursive: true })
 
   const serverExe = join(vlmDir, 'llama-server.exe')
-  const modelFile = join(vlmDir, MODEL_FILE)
-  const mmprojFile = join(vlmDir, MMPROJ_FILE)
+  const modelFile = join(vlmDir, VLM_MODEL_FILE)
+  const mmprojFile = join(vlmDir, VLM_MMPROJ_FILE)
 
   if (!existsSync(serverExe)) {
     console.log('\n=== Downloading llama-server (CUDA build) ===')
@@ -52,18 +51,18 @@ async function main() {
   }
 
   if (!existsSync(modelFile)) {
-    console.log(`\n=== Downloading ${MODEL_FILE} (~2.55 GB) ===`)
+    console.log(`\n=== Downloading ${VLM_MODEL_FILE} (~2.55 GB) ===`)
     console.log('This may take a while...')
-    run(`curl -L -o "${modelFile}" "${MODEL_URL}"`)
+    run(`curl -L -o "${modelFile}" "${VLM_MODEL_URL}"`)
   } else {
-    console.log(`${MODEL_FILE} already exists, skipping download`)
+    console.log(`${VLM_MODEL_FILE} already exists, skipping download`)
   }
 
   if (!existsSync(mmprojFile)) {
-    console.log(`\n=== Downloading ${MMPROJ_FILE} (~644 MB) ===`)
-    run(`curl -L -o "${mmprojFile}" "${MMPROJ_URL}"`)
+    console.log(`\n=== Downloading ${VLM_MMPROJ_FILE} (~644 MB) ===`)
+    run(`curl -L -o "${mmprojFile}" "${VLM_MMPROJ_URL}"`)
   } else {
-    console.log(`${MMPROJ_FILE} already exists, skipping download`)
+    console.log(`${VLM_MMPROJ_FILE} already exists, skipping download`)
   }
 
   console.log('\n=== Download complete ===')

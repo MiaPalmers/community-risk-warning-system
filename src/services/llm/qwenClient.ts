@@ -1,8 +1,9 @@
 import { http } from '@/services/http';
 import type { ChatCompletionsPayload, ChatCompletionsResponse } from './types';
+import { DEFAULT_VLM_MODEL_ALIAS } from '../../../shared/vlmModelConfig.js';
 
 const proxyPath = import.meta.env.VITE_QWEN_PROXY_PATH || '/api/qwen/chat/completions';
-const model = import.meta.env.VITE_QWEN_MODEL || 'jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m';
+const model = import.meta.env.VITE_QWEN_MODEL || DEFAULT_VLM_MODEL_ALIAS;
 
 export async function callQwenChat(
   payload: Omit<ChatCompletionsPayload, 'model'>

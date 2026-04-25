@@ -7,6 +7,7 @@ import {
   parseProxyResponseText
 } from './qwenProxy.js';
 import { resolveOllamaHealthStatus } from './ollamaHealthStatus.js';
+import { DEFAULT_VLM_MODEL_ALIAS } from '../shared/vlmModelConfig.js';
 
 describe('qwenProxy', () => {
   it('normalizes config from environment variables', () => {
@@ -28,7 +29,7 @@ describe('qwenProxy', () => {
   it('defaults to the Jackrong distilled Qwen3.5 4B model', () => {
     const config = loadQwenProxyConfig({});
 
-    expect(config.qwenModel).toBe('jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m');
+    expect(config.qwenModel).toBe(DEFAULT_VLM_MODEL_ALIAS);
   });
 
   it('uses the default model only when the request body omits model', () => {

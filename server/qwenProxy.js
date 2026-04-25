@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { resolveOllamaHealthStatus } from './ollamaHealthStatus.js';
+import { DEFAULT_VLM_MODEL_ALIAS } from '../shared/vlmModelConfig.js';
 
 function parseCorsOrigin(rawOrigin = 'http://localhost:5173') {
   const trimmed = rawOrigin.trim();
@@ -42,7 +43,7 @@ export function loadQwenProxyConfig(env = process.env) {
     corsOrigin: parseCorsOrigin(env.CORS_ORIGIN || 'http://localhost:5173'),
     qwenBaseUrl: (env.QWEN_BASE_URL || '').replace(/\/$/, ''),
     qwenApiKey: env.QWEN_API_KEY || '',
-    qwenModel: env.QWEN_MODEL || 'jackrong-qwen3.5-4b-claude-4.6-opus-distilled-v2:q4_k_m',
+    qwenModel: env.QWEN_MODEL || DEFAULT_VLM_MODEL_ALIAS,
     qwenTimeout: Number(env.QWEN_TIMEOUT || 60000)
   };
 }
