@@ -1,8 +1,9 @@
 import { http } from '@/services/http'
 import type { VlmAnalysis, DetectionBox } from '@/types'
+import { OLLAMA_CHAT_COMPLETIONS_ROUTE } from '../../../shared/apiRoutes.js'
 import { DEFAULT_VLM_MODEL_ALIAS } from '../../../shared/vlmModelConfig.js'
 
-const OLLAMA_PROXY_PATH = '/api/ollama/chat/completions'
+const OLLAMA_PROXY_PATH = OLLAMA_CHAT_COMPLETIONS_ROUTE
 export const OLLAMA_MODEL = DEFAULT_VLM_MODEL_ALIAS
 
 const SYSTEM_PROMPT = `/no_think

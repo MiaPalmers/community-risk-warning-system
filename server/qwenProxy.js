@@ -1,6 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import { resolveOllamaHealthStatus } from './ollamaHealthStatus.js';
+import {
+  API_HEALTH_ROUTE,
+  OLLAMA_CHAT_COMPLETIONS_ROUTE,
+  OLLAMA_STATUS_ROUTE,
+  QWEN_CHAT_COMPLETIONS_ROUTE
+} from '../shared/apiRoutes.js';
 import { DEFAULT_VLM_MODEL_ALIAS } from '../shared/vlmModelConfig.js';
 
 function parseCorsOrigin(rawOrigin = 'http://localhost:5173') {
@@ -97,7 +103,7 @@ export function createQwenProxyApp(config = loadQwenProxyConfig()) {
 
   createOllamaProxyRoutes(app);
 
-  app.get('/api/health', (_req, res) => {
+  app.get(API_HEALTH_ROUTE, (_req, res) => {
     res.json({
       ok: true,
       service: 'community-risk-warning-proxy',
@@ -107,7 +113,7 @@ export function createQwenProxyApp(config = loadQwenProxyConfig()) {
     });
   });
 
-  app.post('/api/qwen/chat/completions', async (req, res) => {
+  app.post(QWEN_CHAT_COMPLETIONS_ROUTE, async (req, res) => {
     if (!config.qwenBaseUrl || !config.qwenApiKey) {
       return res.status(500).json({
         error: {
@@ -154,7 +160,7 @@ export function createQwenProxyApp(config = loadQwenProxyConfig()) {
 export function createOllamaProxyRoutes(app) {
   const OLLAMA_BASE = 'http://127.0.0.1:11434';
 
-  app.post('/api/ollama/chat/completions', async (req, res) => {
+  app.post(OLLAMA_CHAT_COMPLETIONS_ROUTE, async (req, res) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 120000);
 
@@ -196,7 +202,7 @@ export function createOllamaProxyRoutes(app) {
     }
   });
 
-  app.get('/api/ollama/status', async (_req, res) => {
+  app.get(OLLAMA_STATUS_ROUTE, async (_req, res) => {
     try {
       const r = await fetch(`${OLLAMA_BASE}/health`, { signal: AbortSignal.timeout(3000) });
       res.json(resolveOllamaHealthStatus(r.status));

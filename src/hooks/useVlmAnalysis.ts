@@ -3,6 +3,7 @@ import { useAppStore } from '@/store/useAppStore'
 import { analyzeFrameWithOllama } from '@/services/llm/ollamaClient'
 import { useFrameCapture } from './useFrameCapture'
 import { http } from '@/services/http'
+import { OLLAMA_STATUS_ROUTE } from '../../shared/apiRoutes.js'
 
 interface VlmAnalysisOptions {
   videoRef: React.RefObject<HTMLVideoElement | null>
@@ -24,7 +25,7 @@ export function finalizeVlmFrame(options: FinalizeVlmFrameOptions): void {
 
 async function checkVlmServerReady(): Promise<boolean> {
   try {
-    const res = await http.get('/api/ollama/status', { timeout: 3000 })
+    const res = await http.get(OLLAMA_STATUS_ROUTE, { timeout: 3000 })
     return res.data?.ready === true
   } catch {
     return false
