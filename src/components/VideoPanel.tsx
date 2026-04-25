@@ -3,6 +3,11 @@ import type { CameraPoint } from '@/types';
 import { riskColorMap, riskLevelTextMap } from '@/utils/risk';
 import { LiveVideoPlayer } from '@/components/player/LiveVideoPlayer';
 import { useAppStore } from '@/store/useAppStore';
+import {
+  formatDetectionBoxConfidence,
+  getDetectionBoxClassName,
+  getDetectionBoxStyle
+} from '@/utils/detectionBoxView';
 
 interface VideoPanelProps {
   camera: CameraPoint;
@@ -45,15 +50,10 @@ export function VideoPanel({
         {detectionBoxes.map((box, i) => (
           <div
             key={i}
-            className={`detection-box ${box.risk ? 'danger-box' : 'notice-box'}`}
-            style={{
-              top: `${box.y * 100}%`,
-              left: `${box.x * 100}%`,
-              width: `${box.width * 100}%`,
-              height: `${box.height * 100}%`
-            }}
+            className={getDetectionBoxClassName(box)}
+            style={getDetectionBoxStyle(box)}
           >
-            <span>{box.label} {Math.round(box.confidence * 100)}%</span>
+            <span>{box.label} {formatDetectionBoxConfidence(box)}</span>
           </div>
         ))}
       </div>

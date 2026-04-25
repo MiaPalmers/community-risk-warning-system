@@ -5,6 +5,7 @@ import { VlmAnalysisPanel } from '@/components/VlmAnalysisPanel';
 import { useAppStore } from '@/store/useAppStore';
 import { useLocalCamera } from '@/hooks/useLocalCamera';
 import { useVlmAnalysis } from '@/hooks/useVlmAnalysis';
+import { getVlmStatusView } from '@/utils/vlmStatusView';
 import {
   PieChart,
   Pie,
@@ -31,14 +32,6 @@ function renderPieLabel({ cx, cy, midAngle, outerRadius, name, percent }: any) {
   );
 }
 
-const vlmStatusConfig: Record<string, { color: string; text: string }> = {
-  idle: { color: 'default', text: '等待连接' },
-  loading: { color: 'processing', text: '加载模型...' },
-  analyzing: { color: 'processing', text: '分析中...' },
-  ready: { color: 'success', text: 'VLM 在线' },
-  error: { color: 'error', text: 'VLM 异常' }
-};
-
 export function OverviewPage() {
   const { cameras, activeCameraId, analysis, setActiveCamera, vlmStatus } = useAppStore();
   const { stream, loading, error } = useLocalCamera();
@@ -59,7 +52,7 @@ export function OverviewPage() {
     enabled: !!stream
   });
 
-  const statusCfg = vlmStatusConfig[vlmStatus] ?? vlmStatusConfig.idle;
+  const statusCfg = getVlmStatusView(vlmStatus, 'overview');
 
   return (
     <div className="overview-grid">

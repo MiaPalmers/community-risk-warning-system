@@ -4,6 +4,12 @@ import { useLocalCamera } from '@/hooks/useLocalCamera';
 import { useAppStore } from '@/store/useAppStore';
 import { useVlmAnalysis } from '@/hooks/useVlmAnalysis';
 import { riskColorMap, riskLevelTextMap } from '@/utils/risk';
+import { getVlmStatusView } from '@/utils/vlmStatusView';
+import {
+  formatDetectionBoxConfidence,
+  getDetectionBoxClassName,
+  getDetectionBoxStyle
+} from '@/utils/detectionBoxView';
 
 export function MonitorPage() {
   const { stream, loading, error } = useLocalCamera();
@@ -33,14 +39,7 @@ export function MonitorPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const statusText = vlmStatus === 'analyzing' ? '分析中'
-    : vlmStatus === 'ready' ? 'VLM 在线'
-    : vlmStatus === 'error' ? 'VLM 异常'
-    : '等待连接';
-  const statusColor = vlmStatus === 'ready' ? 'success'
-    : vlmStatus === 'analyzing' ? 'processing'
-    : vlmStatus === 'error' ? 'error'
-    : 'default';
+  const statusView = getVlmStatusView(vlmStatus, 'monitor');
 
   return (
     <div className="monitor-layout">
@@ -57,7 +56,7 @@ export function MonitorPage() {
             <Tag color={activeCamera?.status === 'online' ? 'success' : 'default'}>
               {activeCamera?.status === 'online' ? '在线' : '离线'}
             </Tag>
-            <Tag color={statusColor} style={{ fontSize: 11 }}>{statusText}</Tag>
+            <Tag color={statusView.color} style={{ fontSize: 11 }}>{statusView.text}</Tag>
           </div>
         </div>
 
@@ -93,15 +92,10 @@ export function MonitorPage() {
           {detectionBoxes.map((box, i) => (
             <div
               key={i}
-              className={`detection-box ${box.risk ? 'danger-box' : 'notice-box'}`}
-              style={{
-                top: `${box.y * 100}%`,
-                left: `${box.x * 100}%`,
-                width: `${box.width * 100}%`,
-                height: `${box.height * 100}%`
-              }}
+              className={getDetectionBoxClassName(box)}
+              style={getDetectionBoxStyle(box)}
             >
-              <span>{box.label} {Math.round(box.confidence * 100)}%</span>
+              <span>{box.label} {formatDetectionBoxConfidence(box)}</span>
             </div>
           ))}
         </div>
