@@ -12,6 +12,16 @@ interface VlmAnalysisOptions {
   captureIntervalMs?: number
 }
 
+interface FinalizeVlmFrameOptions {
+  markConsumed: () => void
+  releaseAnalysisLock: () => void
+}
+
+export function finalizeVlmFrame(options: FinalizeVlmFrameOptions): void {
+  options.markConsumed()
+  options.releaseAnalysisLock()
+}
+
 async function checkVlmServerReady(): Promise<boolean> {
   try {
     const res = await http.get('/api/ollama/status', { timeout: 3000 })
@@ -81,10 +91,12 @@ export function useVlmAnalysis(options: VlmAnalysisOptions) {
           )
         }
       } finally {
-        if (!cancelled) {
-          markConsumed()
-          analyzingRef.current = false
-        }
+        finalizeVlmFrame({
+          markConsumed,
+          releaseAnalysisLock: () => {
+            analyzingRef.current = false
+          }
+        })
       }
     })()
 

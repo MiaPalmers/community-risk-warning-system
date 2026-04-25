@@ -56,6 +56,18 @@ export function buildQwenRequestBody(body = {}, defaultModel) {
   return requestBody;
 }
 
+export function resolveOllamaHealthStatus(statusCode) {
+  if (statusCode >= 200 && statusCode < 300) {
+    return { ready: true, status: 'ready', gpu: 'unknown' };
+  }
+
+  if (statusCode === 503) {
+    return { ready: false, status: 'loading', gpu: 'unknown' };
+  }
+
+  return { ready: false, status: 'error', gpu: 'unknown' };
+}
+
 export function createQwenProxyApp(config = loadQwenProxyConfig()) {
   const app = express();
 
@@ -182,13 +194,9 @@ export function createOllamaProxyRoutes(app) {
   app.get('/api/ollama/status', async (_req, res) => {
     try {
       const r = await fetch(`${OLLAMA_BASE}/health`, { signal: AbortSignal.timeout(3000) });
-      if (r.ok || r.status === 503) {
-        res.json({ ready: true });
-      } else {
-        res.json({ ready: false });
-      }
+      res.json(resolveOllamaHealthStatus(r.status));
     } catch {
-      res.json({ ready: false });
+      res.json({ ready: false, status: 'error', gpu: 'unknown' });
     }
   });
 }

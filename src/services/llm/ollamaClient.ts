@@ -34,6 +34,43 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value))
 }
 
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function normalizeDetectionBox(box: unknown): DetectionBox | null {
+  if (!box || typeof box !== 'object') {
+    return null
+  }
+
+  const candidate = box as Partial<DetectionBox>
+  if (
+    !isFiniteNumber(candidate.x) ||
+    !isFiniteNumber(candidate.y) ||
+    !isFiniteNumber(candidate.width) ||
+    !isFiniteNumber(candidate.height) ||
+    !isFiniteNumber(candidate.confidence) ||
+    typeof candidate.label !== 'string' ||
+    !candidate.label.trim()
+  ) {
+    return null
+  }
+
+  if (candidate.width <= 0 || candidate.height <= 0) {
+    return null
+  }
+
+  return {
+    x: clamp(candidate.x, 0, 1),
+    y: clamp(candidate.y, 0, 1),
+    width: clamp(candidate.width, 0, 1),
+    height: clamp(candidate.height, 0, 1),
+    label: candidate.label,
+    confidence: clamp(candidate.confidence, 0, 1),
+    risk: typeof candidate.risk === 'boolean' ? candidate.risk : false
+  }
+}
+
 function stripThinkTags(text: string): string {
   return text.replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, '').trim()
 }
@@ -75,7 +112,7 @@ function extractJson(raw: string): string | null {
   return null
 }
 
-function parseVlmResponse(raw: string): { analysis: VlmAnalysis; boxes: DetectionBox[] } {
+export function parseVlmResponse(raw: string): { analysis: VlmAnalysis; boxes: DetectionBox[] } {
   const fallback: VlmAnalysis = {
     riskScore: 0,
     level: 'C',
@@ -108,9 +145,10 @@ function parseVlmResponse(raw: string): { analysis: VlmAnalysis; boxes: Detectio
       trend: []
     }
     const boxes: DetectionBox[] = Array.isArray(parsed.detectionBoxes)
-      ? parsed.detectionBoxes.filter(
-          (b) => typeof b.x === 'number' && typeof b.y === 'number' && b.label
-        )
+      ? parsed.detectionBoxes.flatMap((box) => {
+          const normalized = normalizeDetectionBox(box)
+          return normalized ? [normalized] : []
+        })
       : []
 
     return { analysis, boxes }

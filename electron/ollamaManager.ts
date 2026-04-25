@@ -10,6 +10,16 @@ const MMPROJ_FILE = 'mmproj-BF16.gguf'
 
 let serverProcess: ChildProcess | null = null
 let ready = false
+let status: OllamaRuntimeStatus = 'starting'
+
+export type OllamaRuntimeStatus = 'starting' | 'loading' | 'ready' | 'error'
+export type GpuAvailability = 'unknown'
+
+export interface OllamaHealthStatus {
+  ready: boolean
+  status: OllamaRuntimeStatus
+  gpu: GpuAvailability
+}
 
 export function getOllamaBaseUrl(): string {
   return VLM_BASE
@@ -19,8 +29,24 @@ export function isOllamaReady(): boolean {
   return ready
 }
 
-export function isGpuAvailable(): boolean {
-  return true
+export function isGpuAvailable(): GpuAvailability {
+  return 'unknown'
+}
+
+export function getOllamaRuntimeStatus(): OllamaRuntimeStatus {
+  return status
+}
+
+export function resolveOllamaHealthStatus(statusCode: number): OllamaHealthStatus {
+  if (statusCode >= 200 && statusCode < 300) {
+    return { ready: true, status: 'ready', gpu: 'unknown' }
+  }
+
+  if (statusCode === 503) {
+    return { ready: false, status: 'loading', gpu: 'unknown' }
+  }
+
+  return { ready: false, status: 'error', gpu: 'unknown' }
 }
 
 async function checkReady(): Promise<boolean> {
@@ -28,8 +54,11 @@ async function checkReady(): Promise<boolean> {
     const res = await fetch(`${VLM_BASE}/health`, {
       signal: AbortSignal.timeout(2000)
     })
-    return res.ok || res.status === 503
+    const healthStatus = resolveOllamaHealthStatus(res.status)
+    status = healthStatus.status
+    return healthStatus.ready
   } catch {
+    status = serverProcess ? 'starting' : 'error'
     return false
   }
 }
@@ -73,6 +102,7 @@ export async function startOllama(): Promise<void> {
   if (!resources) {
     console.warn('[vlm] llama-server.exe not found in resources, VLM features disabled')
     console.warn('[vlm] Run: node scripts/download-model.js')
+    status = 'error'
     return
   }
 
@@ -83,6 +113,7 @@ export async function startOllama(): Promise<void> {
   if (!fs.existsSync(modelPath)) {
     console.error(`[vlm] Model file not found: ${modelPath}`)
     console.error('[vlm] Run: node scripts/download-model.js')
+    status = 'error'
     return
   }
 
@@ -103,6 +134,7 @@ export async function startOllama(): Promise<void> {
   }
 
   console.log('[vlm] Starting:', serverExe, args.join(' '))
+  status = 'starting'
 
   try {
     serverProcess = spawn(serverExe, args, {
@@ -115,6 +147,7 @@ export async function startOllama(): Promise<void> {
 
     serverProcess.on('error', (err) => {
       console.error('[vlm] Process error:', err.message)
+      status = 'error'
     })
 
     serverProcess.stdout?.on('data', (data: Buffer) => {
@@ -130,14 +163,17 @@ export async function startOllama(): Promise<void> {
     serverProcess.on('exit', (code) => {
       console.log('[vlm] Process exited with code', code)
       ready = false
+      status = 'error'
     })
 
     await waitForReady(60_000)
     ready = true
+    status = 'ready'
     console.log('[vlm] Ready')
   } catch (err) {
     console.error('[vlm] Failed to start:', err)
     ready = false
+    status = 'error'
   }
 }
 
@@ -147,4 +183,5 @@ export async function stopOllama(): Promise<void> {
     serverProcess = null
   }
   ready = false
+  status = 'starting'
 }

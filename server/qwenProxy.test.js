@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildQwenRequestBody, isAllowedCorsOrigin, loadQwenProxyConfig } from './qwenProxy.js';
+import {
+  buildQwenRequestBody,
+  isAllowedCorsOrigin,
+  loadQwenProxyConfig,
+  resolveOllamaHealthStatus
+} from './qwenProxy.js';
 
 describe('qwenProxy', () => {
   it('normalizes config from environment variables', () => {
@@ -44,5 +49,11 @@ describe('qwenProxy', () => {
     expect(isAllowedCorsOrigin('file://', allowedOrigins)).toBe(true);
     expect(isAllowedCorsOrigin('http://localhost:5173', allowedOrigins)).toBe(true);
     expect(isAllowedCorsOrigin('https://example.com', allowedOrigins)).toBe(false);
+  });
+
+  it('maps Ollama health responses without treating 503 as ready', () => {
+    expect(resolveOllamaHealthStatus(200)).toEqual({ ready: true, status: 'ready', gpu: 'unknown' });
+    expect(resolveOllamaHealthStatus(503)).toEqual({ ready: false, status: 'loading', gpu: 'unknown' });
+    expect(resolveOllamaHealthStatus(500)).toEqual({ ready: false, status: 'error', gpu: 'unknown' });
   });
 });

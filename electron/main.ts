@@ -4,7 +4,14 @@ import path from 'node:path'
 import fs from 'node:fs'
 import dotenv from 'dotenv'
 import { createQwenProxyApp, loadQwenProxyConfig } from '../server/qwenProxy.js'
-import { startOllama, stopOllama, isOllamaReady, getOllamaBaseUrl, isGpuAvailable } from './ollamaManager.js'
+import {
+  startOllama,
+  stopOllama,
+  isOllamaReady,
+  getOllamaBaseUrl,
+  getOllamaRuntimeStatus,
+  isGpuAvailable
+} from './ollamaManager.js'
 
 const baseDir = app.isPackaged ? path.dirname(app.getPath('exe')) : app.getAppPath()
 
@@ -37,6 +44,7 @@ ipcMain.handle('get-api-base', () => {
 
 ipcMain.handle('get-ollama-status', () => ({
   ready: isOllamaReady(),
+  status: getOllamaRuntimeStatus(),
   baseUrl: getOllamaBaseUrl(),
   gpu: isGpuAvailable()
 }))
