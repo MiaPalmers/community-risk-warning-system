@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildProxyErrorResponse,
   buildQwenRequestBody,
   isAllowedCorsOrigin,
   loadQwenProxyConfig,
@@ -66,5 +67,60 @@ describe('qwenProxy', () => {
 
   it('keeps non-JSON upstream responses in a raw payload', () => {
     expect(parseProxyResponseText('service unavailable')).toEqual({ raw: 'service unavailable' });
+  });
+
+  it('builds Qwen timeout and proxy error responses without changing payload shape', () => {
+    const timeoutError = new Error('aborted');
+    timeoutError.name = 'AbortError';
+
+    expect(buildProxyErrorResponse(timeoutError, {
+      timeoutMessage: 'Qwen 接口请求超时',
+      timeoutType: 'timeout_error',
+      fallbackMessage: '代理请求失败',
+      fallbackType: 'proxy_error'
+    })).toEqual({
+      statusCode: 504,
+      body: {
+        error: {
+          message: 'Qwen 接口请求超时',
+          type: 'timeout_error'
+        }
+      }
+    });
+
+    expect(buildProxyErrorResponse(new Error('network down'), {
+      timeoutMessage: 'Qwen 接口请求超时',
+      timeoutType: 'timeout_error',
+      fallbackMessage: '代理请求失败',
+      fallbackType: 'proxy_error'
+    })).toEqual({
+      statusCode: 500,
+      body: {
+        error: {
+          message: 'network down',
+          type: 'proxy_error'
+        }
+      }
+    });
+  });
+
+  it('builds Ollama timeout responses with the existing timeout type', () => {
+    const timeoutError = new Error('aborted');
+    timeoutError.name = 'AbortError';
+
+    expect(buildProxyErrorResponse(timeoutError, {
+      timeoutMessage: 'Ollama 推理超时',
+      timeoutType: 'timeout',
+      fallbackMessage: '代理请求失败',
+      fallbackType: 'proxy_error'
+    })).toEqual({
+      statusCode: 504,
+      body: {
+        error: {
+          message: 'Ollama 推理超时',
+          type: 'timeout'
+        }
+      }
+    });
   });
 });

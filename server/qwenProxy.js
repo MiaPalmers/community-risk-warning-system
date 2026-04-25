@@ -66,6 +66,23 @@ export function parseProxyResponseText(text, onInvalidJson) {
   }
 }
 
+export function buildProxyErrorResponse(error, options) {
+  const isAbortError = error instanceof Error && error.name === 'AbortError';
+  return {
+    statusCode: isAbortError ? 504 : 500,
+    body: {
+      error: {
+        message: isAbortError
+          ? options.timeoutMessage
+          : error instanceof Error
+            ? error.message
+            : options.fallbackMessage,
+        type: isAbortError ? options.timeoutType : options.fallbackType
+      }
+    }
+  };
+}
+
 export function createQwenProxyApp(config = loadQwenProxyConfig()) {
   const app = express();
 
@@ -118,14 +135,13 @@ export function createQwenProxyApp(config = loadQwenProxyConfig()) {
 
       return res.status(response.status).json(payload);
     } catch (error) {
-      const isAbortError = error instanceof Error && error.name === 'AbortError';
-
-      return res.status(isAbortError ? 504 : 500).json({
-        error: {
-          message: isAbortError ? 'Qwen 接口请求超时' : error instanceof Error ? error.message : '代理请求失败',
-          type: isAbortError ? 'timeout_error' : 'proxy_error'
-        }
+      const errorResponse = buildProxyErrorResponse(error, {
+        timeoutMessage: 'Qwen 接口请求超时',
+        timeoutType: 'timeout_error',
+        fallbackMessage: '代理请求失败',
+        fallbackType: 'proxy_error'
       });
+      return res.status(errorResponse.statusCode).json(errorResponse.body);
     } finally {
       clearTimeout(timer);
     }
@@ -167,13 +183,13 @@ export function createOllamaProxyRoutes(app) {
 
       return res.status(response.status).json(payload);
     } catch (error) {
-      const isAbort = error instanceof Error && error.name === 'AbortError';
-      return res.status(isAbort ? 504 : 500).json({
-        error: {
-          message: isAbort ? 'Ollama 推理超时' : error instanceof Error ? error.message : '代理请求失败',
-          type: isAbort ? 'timeout' : 'proxy_error'
-        }
+      const errorResponse = buildProxyErrorResponse(error, {
+        timeoutMessage: 'Ollama 推理超时',
+        timeoutType: 'timeout',
+        fallbackMessage: '代理请求失败',
+        fallbackType: 'proxy_error'
       });
+      return res.status(errorResponse.statusCode).json(errorResponse.body);
     } finally {
       clearTimeout(timer);
     }
