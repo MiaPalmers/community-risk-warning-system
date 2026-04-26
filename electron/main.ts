@@ -61,7 +61,6 @@ function createWindow(): void {
     width: 1440,
     height: 900,
     title: '险封·社区风险预警平台',
-    icon: path.join(__dirname, '../renderer/public/shield.svg'),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       sandbox: true,

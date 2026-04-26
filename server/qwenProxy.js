@@ -290,15 +290,11 @@ export function createOllamaProxyRoutes(app, config = loadQwenProxyConfig(), cha
         console.error('[ollama-proxy] Non-JSON response from upstream');
       });
 
-      if (config.logModelOutput && payload?.choices?.[0]?.message?.content) {
-        const content = payload.choices[0].message.content;
-        console.log('[ollama-proxy] Model output length:', content.length);
-        if (content.length < 500) {
-          console.log('[ollama-proxy] Model output:', content);
-        } else {
-          console.log('[ollama-proxy] Model output (first 300):', content.slice(0, 300));
-          console.log('[ollama-proxy] Model output (last 200):', content.slice(-200));
-        }
+      if (config.logModelOutput) {
+        console.log('[ollama-proxy] Model output metadata:', {
+          statusCode: response.status,
+          contentLength: payload?.choices?.[0]?.message?.content?.length ?? 0
+        });
       }
 
       return res.status(response.status).json(payload);
