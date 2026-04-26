@@ -9,5 +9,6 @@ describe('dependabot workflow', () => {
     expect(workflow).not.toContain('contents: write');
     expect(workflow).not.toContain('gh pr review --approve');
     expect(workflow).not.toContain('gh pr merge');
+    expect(workflow).not.toContain('dependabot/fetch-metadata@');
   });
 });

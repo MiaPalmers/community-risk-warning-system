@@ -1,17 +1,61 @@
 version: 2
+
 updates:
-  - package-ecosystem: "npm"
-    # 扫描项目根目录的 package.json
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-    # 自定义依赖更新 PR 的标签
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Shanghai'
+    open-pull-requests-limit: 6
+    cooldown:
+      semver-major-days: 14
+      semver-minor-days: 3
+      semver-patch-days: 2
     labels:
-      - "dependencies"
-      - "dependabot"
-    # （可选）如果有需要忽略更新的特定包，可以在这里配置
-    # ignore:
-    #   - dependency-name: "example-package"
+      - 'dependencies'
+      - 'dependabot'
+      - 'npm'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      prefix-development: 'chore(dev)'
+      include: 'scope'
+    groups:
+      npm-production:
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'patch'
+      npm-development:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:30'
+      timezone: 'Asia/Shanghai'
+    open-pull-requests-limit: 3
+    cooldown:
+      semver-major-days: 14
+      semver-minor-days: 3
+      semver-patch-days: 2
+    labels:
+      - 'dependencies'
+      - 'dependabot'
+      - 'github-actions'
+    commit-message:
+      prefix: 'ci'
+      include: 'scope'
+    groups:
+      github-actions-non-major:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'

@@ -9,6 +9,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  IS_DEPENDABOT_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' }}
+
 jobs:
   build:
     runs-on: windows-latest
@@ -32,6 +35,7 @@ jobs:
         run: npm run typecheck
 
       - name: Create .env from secrets
+        if: env.IS_DEPENDABOT_PR != 'true'
         shell: pwsh
         run: |
           $envContent = '${{ secrets.ENV_FILE }}'
@@ -40,6 +44,7 @@ jobs:
           }
 
       - name: Cache VLM model files
+        if: env.IS_DEPENDABOT_PR != 'true'
         id: cache-vlm
         uses: actions/cache@v5
         with:
@@ -47,7 +52,7 @@ jobs:
           key: vlm-jackrong-qwen3.5-4b-q4km-mmproj-sha256-v1
 
       - name: Download VLM model files
-        if: steps.cache-vlm.outputs.cache-hit != 'true'
+        if: env.IS_DEPENDABOT_PR != 'true' && steps.cache-vlm.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path resources/vlm
@@ -74,6 +79,7 @@ jobs:
           Get-ChildItem resources/vlm | Format-Table Name, Length
 
       - name: Verify VLM model file hashes
+        if: env.IS_DEPENDABOT_PR != 'true'
         shell: pwsh
         run: |
           $expectedModelSha256 = "de8cf2454c46ec34e6b991dc11f5dd42d543926272d8a59d36ceb5a2eaf7962a"
@@ -92,10 +98,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Skip packaging for Dependabot PRs
+        if: env.IS_DEPENDABOT_PR == 'true'
+        run: echo "Skipping VLM download and Windows packaging for Dependabot pull requests."
+
       - name: Package
+        if: env.IS_DEPENDABOT_PR != 'true'
         run: npm run package
 
       - name: Upload portable zip
+        if: env.IS_DEPENDABOT_PR != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: windows-portable

@@ -10,15 +10,10 @@ jobs:
   dependabot:
     runs-on: ubuntu-latest
     # 只有当 PR 的发起者是 dependabot 时才触发
-    if: github.actor == 'dependabot[bot]'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
-      - name: Fetch Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v2
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-
       - name: Require manual review
         run: |
-          echo "Dependabot update type: ${{ steps.metadata.outputs.update-type }}"
+          echo "Dependabot PR: ${{ github.event.pull_request.title }}"
+          echo "PR URL: ${{ github.event.pull_request.html_url }}"
           echo "Dependency updates require the normal build checks and a human merge decision."

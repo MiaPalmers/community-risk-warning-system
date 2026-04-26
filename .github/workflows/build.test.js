@@ -15,4 +15,13 @@ describe('build workflow', () => {
     expect(testIndex).toBeLessThan(buildIndex);
     expect(typecheckIndex).toBeLessThan(buildIndex);
   });
+
+  it('skips heavyweight packaging steps for Dependabot pull requests', () => {
+    const workflow = fs.readFileSync(new URL('./build.yml', import.meta.url), 'utf8');
+
+    expect(workflow).toContain('IS_DEPENDABOT_PR');
+    expect(workflow).toContain("if: env.IS_DEPENDABOT_PR != 'true'");
+    expect(workflow).toContain("if: env.IS_DEPENDABOT_PR == 'true'");
+    expect(workflow).toContain('Skipping VLM download and Windows packaging for Dependabot pull requests.');
+  });
 });
