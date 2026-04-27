@@ -138,7 +138,7 @@ jobs:
           Copy-Item "resources/vlm/mmproj-BF16.gguf" -Destination "dist-models/"
           Set-Content -Path "dist-models/README-解压说明.txt" -Value $modelReadme -Encoding UTF8
 
-          Compress-Archive -Path "dist-models/*" -DestinationPath "dist-models/vlm-models.zip" -Force
+          7z a -tzip "dist-models/vlm-models.zip" ".\dist-models\Qwen3.5-4B.Q4_K_M.gguf" ".\dist-models\mmproj-BF16.gguf" ".\dist-models\README-解压说明.txt"
           Remove-Item "dist-models/Qwen3.5-4B.Q4_K_M.gguf", "dist-models/mmproj-BF16.gguf", "dist-models/README-解压说明.txt"
 
       - name: Upload portable zip
