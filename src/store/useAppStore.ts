@@ -1,8 +1,10 @@
 import { create } from 'zustand';
 import { cameras, events } from '@/data/mock';
-import type { CameraPoint, RiskEvent, VlmAnalysis, DetectionBox } from '@/types';
+import type { CameraPoint, RiskEvent, VlmAnalysis, DetectionBox, TrendPoint } from '@/types';
 
 export type VlmStatus = 'idle' | 'loading' | 'analyzing' | 'ready' | 'error';
+
+const MAX_TREND_POINTS = 30;
 
 interface AppState {
   cameras: CameraPoint[];
@@ -67,12 +69,19 @@ export const useAppStore = create<AppState>((set, get) => ({
       events: state.events.map((item) => (item.id === eventId ? { ...item, status } : item))
     })),
 
-  setAnalysis: (analysis, boxes) =>
+  setAnalysis: (analysis, boxes) => {
+    const prevTrend = get().analysis.trend;
+    const now = new Date();
+    const timeLabel = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    const newPoint: TrendPoint = { time: timeLabel, value: analysis.riskScore };
+    const trend: TrendPoint[] = [...prevTrend, newPoint].slice(-MAX_TREND_POINTS);
+
     set({
-      analysis,
+      analysis: { ...analysis, trend },
       detectionBoxes: boxes,
       analysisTimestamp: Date.now()
-    }),
+    });
+  },
 
   setVlmStatus: (status, error) =>
     set({

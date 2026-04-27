@@ -106,12 +106,54 @@ jobs:
         if: env.IS_DEPENDABOT_PR != 'true'
         run: npm run package
 
+      - name: Create VLM model package
+        if: env.IS_DEPENDABOT_PR != 'true'
+        shell: pwsh
+        run: |
+          $modelReadme = @"
+          VLM 模型文件 — 解压说明
+          ========================
+
+          本压缩包包含视觉语言模型文件：
+            - Qwen3.5-4B.Q4_K_M.gguf   (主模型 ~2.55 GB)
+            - mmproj-BF16.gguf           (视觉编码器 ~644 MB)
+
+          解压位置
+          --------
+          将两个 .gguf 文件解压到应用程序的 resources\vlm\ 目录下。
+
+          完整路径应类似：
+            <应用安装目录>\resources\vlm\Qwen3.5-4B.Q4_K_M.gguf
+            <应用安装目录>\resources\vlm\mmproj-BF16.gguf
+
+          如果 resources\vlm 目录不存在，请手动创建。
+
+          验证
+          ----
+          解压后启动应用，右上角 "VLM 实时数据" 面板状态应从 "等待连接" 变为 "VLM 在线"。
+          "@
+
+          New-Item -ItemType Directory -Force -Path dist-models
+          Copy-Item "resources/vlm/Qwen3.5-4B.Q4_K_M.gguf" -Destination "dist-models/"
+          Copy-Item "resources/vlm/mmproj-BF16.gguf" -Destination "dist-models/"
+          Set-Content -Path "dist-models/README-解压说明.txt" -Value $modelReadme -Encoding UTF8
+
+          Compress-Archive -Path "dist-models/*" -DestinationPath "dist-models/vlm-models.zip" -Force
+          Remove-Item "dist-models/Qwen3.5-4B.Q4_K_M.gguf", "dist-models/mmproj-BF16.gguf", "dist-models/README-解压说明.txt"
+
       - name: Upload portable zip
         if: env.IS_DEPENDABOT_PR != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: windows-portable
           path: dist-electron/*.zip
+
+      - name: Upload VLM model package
+        if: env.IS_DEPENDABOT_PR != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: vlm-models
+          path: dist-models/vlm-models.zip
 
   release:
     needs: build
@@ -120,14 +162,22 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download artifacts
+      - name: Download app artifact
         uses: actions/download-artifact@v8
         with:
           name: windows-portable
-          path: ./artifacts
+          path: ./artifacts/app
+
+      - name: Download model artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: vlm-models
+          path: ./artifacts/models
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: ./artifacts/*.zip
+          files: |
+            ./artifacts/app/*.zip
+            ./artifacts/models/*.zip
           generate_release_notes: true

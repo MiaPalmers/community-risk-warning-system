@@ -89,7 +89,7 @@
       {
         "from": "resources/vlm",
         "to": "vlm",
-        "filter": ["**/*.exe", "**/*.dll", "**/*.gguf"]
+        "filter": ["**/*.exe", "**/*.dll"]
       }
     ]
   }

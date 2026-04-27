@@ -33,8 +33,8 @@ describe('useAppStore', () => {
     expect(state.analysis).toBe(analysisBefore);
   });
 
-  it('updates analysis and detection boxes via setAnalysis', () => {
-    const mockAnalysis = {
+  it('updates analysis, detection boxes, and accumulates trend via setAnalysis', () => {
+    const mockAnalysis1 = {
       riskScore: 85,
       level: 'A' as const,
       hasRisk: true,
@@ -48,12 +48,31 @@ describe('useAppStore', () => {
       { x: 0.1, y: 0.2, width: 0.3, height: 0.4, label: '障碍物', confidence: 0.92, risk: true }
     ];
 
-    useAppStore.getState().setAnalysis(mockAnalysis, mockBoxes);
+    useAppStore.getState().setAnalysis(mockAnalysis1, mockBoxes);
 
-    const state = useAppStore.getState();
-    expect(state.analysis).toEqual(mockAnalysis);
-    expect(state.detectionBoxes).toEqual(mockBoxes);
-    expect(state.analysisTimestamp).toBeGreaterThan(0);
+    const state1 = useAppStore.getState();
+    expect(state1.analysis.riskScore).toBe(85);
+    expect(state1.analysis.summary).toBe('消防通道被占用');
+    expect(state1.analysis.breakdown).toEqual([{ label: '消防风险', value: 100 }]);
+    expect(state1.analysis.trend).toHaveLength(1);
+    expect(state1.analysis.trend[0].value).toBe(85);
+    expect(state1.detectionBoxes).toEqual(mockBoxes);
+    expect(state1.analysisTimestamp).toBeGreaterThan(0);
+
+    const mockAnalysis2 = {
+      ...mockAnalysis1,
+      riskScore: 62,
+      level: 'B' as const,
+      summary: '风险降低'
+    };
+
+    useAppStore.getState().setAnalysis(mockAnalysis2, []);
+
+    const state2 = useAppStore.getState();
+    expect(state2.analysis.riskScore).toBe(62);
+    expect(state2.analysis.trend).toHaveLength(2);
+    expect(state2.analysis.trend[0].value).toBe(85);
+    expect(state2.analysis.trend[1].value).toBe(62);
   });
 
   it('updates VLM status', () => {
