@@ -21,15 +21,16 @@ describe('useAppStore', () => {
     expect(state.analysis.summary).toContain('等待');
   });
 
-  it('keeps camera, event, and analysis aligned when selecting an event', () => {
+  it('keeps camera and event aligned without overwriting real-time analysis', () => {
     const targetEvent = useAppStore.getState().events[1];
 
+    const analysisBefore = useAppStore.getState().analysis;
     useAppStore.getState().selectEvent(targetEvent.id);
 
     const state = useAppStore.getState();
     expect(state.selectedEventId).toBe(targetEvent.id);
     expect(state.activeCameraId).toBe(targetEvent.cameraId);
-    expect(state.analysis).toEqual(targetEvent.analysis);
+    expect(state.analysis).toBe(analysisBefore);
   });
 
   it('updates analysis and detection boxes via setAnalysis', () => {
