@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react';
 
+let persistentStream: MediaStream | null = null;
+let persistentError: string | null = null;
+
+function isStreamActive(s: MediaStream | null): s is MediaStream {
+  return s !== null && s.active && s.getVideoTracks().some((t) => t.readyState === 'live');
+}
+
 export function useLocalCamera() {
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const reused = isStreamActive(persistentStream);
+  const [stream, setStream] = useState<MediaStream | null>(reused ? persistentStream : null);
+  const [loading, setLoading] = useState(!reused);
+  const [error, setError] = useState<string | null>(reused ? null : persistentError);
 
   useEffect(() => {
+    if (isStreamActive(persistentStream)) {
+      setStream(persistentStream);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let disposed = false;
 
     async function startCamera() {
@@ -15,6 +30,8 @@ export function useLocalCamera() {
           mediaStream.getTracks().forEach((track) => track.stop());
           return;
         }
+        persistentStream = mediaStream;
+        persistentError = null;
         setStream(mediaStream);
         setLoading(false);
       } catch (err) {
@@ -31,6 +48,7 @@ export function useLocalCamera() {
           }
         }
 
+        persistentError = message;
         setError(message);
         setLoading(false);
       }
@@ -40,12 +58,6 @@ export function useLocalCamera() {
 
     return () => {
       disposed = true;
-      setStream((prev) => {
-        if (prev) {
-          prev.getTracks().forEach((track) => track.stop());
-        }
-        return null;
-      });
     };
   }, []);
 

@@ -32,6 +32,8 @@ async function checkVlmServerReady(): Promise<boolean> {
   }
 }
 
+let globalServerReady = false
+
 export function useVlmAnalysis(options: VlmAnalysisOptions) {
   const {
     videoRef,
@@ -41,7 +43,7 @@ export function useVlmAnalysis(options: VlmAnalysisOptions) {
     captureIntervalMs = 5000
   } = options
 
-  const [serverReady, setServerReady] = useState(false)
+  const [serverReady, setServerReady] = useState(globalServerReady)
   const analyzingRef = useRef(false)
 
   const shouldCapture = enabled && serverReady
@@ -60,6 +62,7 @@ export function useVlmAnalysis(options: VlmAnalysisOptions) {
     const check = async () => {
       const ready = await checkVlmServerReady()
       if (ready) {
+        globalServerReady = true
         setServerReady(true)
         useAppStore.getState().setVlmStatus('idle')
       }

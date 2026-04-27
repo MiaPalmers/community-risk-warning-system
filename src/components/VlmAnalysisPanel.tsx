@@ -28,20 +28,24 @@ export function VlmAnalysisPanel({ analysis, variant = 'full' }: VlmAnalysisPane
   const visibleItems =
     variant === 'full' ? insightItems : variant === 'compact' ? insightItems.slice(0, 4) : insightItems.slice(0, 3);
 
+  const isCompact = variant === 'compact';
+
   return (
     <div className={`vlm-panel ${variant !== 'full' ? variant : ''}`}>
-      <div className="vlm-header">
-        <div>
-          <div className="vlm-eyebrow">视觉语言模型分析</div>
-          <div className="vlm-title">{variant === 'summary' ? 'VLM 风险摘要' : 'VLM 实时数据板块'}</div>
+      {!isCompact && (
+        <div className="vlm-header">
+          <div>
+            <div className="vlm-eyebrow">视觉语言模型分析</div>
+            <div className="vlm-title">{variant === 'summary' ? 'VLM 风险摘要' : 'VLM 实时数据板块'}</div>
+          </div>
+          <Space size={4}>
+            <Tag color={riskGradeColorMap[analysis.level]}>等级 {analysis.level}</Tag>
+            <Tag color={analysis.hasRisk ? 'error' : 'success'}>
+              {analysis.hasRisk ? '存在风险' : '风险可控'}
+            </Tag>
+          </Space>
         </div>
-        <Space size={4}>
-          <Tag color={riskGradeColorMap[analysis.level]}>等级 {analysis.level}</Tag>
-          <Tag color={analysis.hasRisk ? 'error' : 'success'}>
-            {analysis.hasRisk ? '存在风险' : '风险可控'}
-          </Tag>
-        </Space>
-      </div>
+      )}
 
       <div className="vlm-main-grid">
         <div className="vlm-score-box">
@@ -55,6 +59,14 @@ export function VlmAnalysisPanel({ analysis, variant = 'full' }: VlmAnalysisPane
             trailColor="rgba(255,255,255,0.06)"
             format={() => `${analysis.level}级`}
           />
+          {isCompact && (
+            <Space size={4} style={{ marginTop: 4 }}>
+              <Tag color={riskGradeColorMap[analysis.level]}>等级 {analysis.level}</Tag>
+              <Tag color={analysis.hasRisk ? 'error' : 'success'}>
+                {analysis.hasRisk ? '存在风险' : '风险可控'}
+              </Tag>
+            </Space>
+          )}
         </div>
 
         <div className="vlm-insight-grid">

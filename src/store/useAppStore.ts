@@ -49,7 +49,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   setActiveCamera: (cameraId) => {
     set({
       activeCameraId: cameraId,
-      analysis: waitingAnalysis,
       detectionBoxes: [],
       selectedEventId: undefined
     });
@@ -59,8 +58,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const eventItem = get().events.find((item) => item.id === eventId);
     set({
       selectedEventId: eventId,
-      activeCameraId: eventItem?.cameraId ?? get().activeCameraId,
-      analysis: eventItem?.analysis ?? get().analysis
+      activeCameraId: eventItem?.cameraId ?? get().activeCameraId
     });
   },
 
