@@ -1,0 +1,22 @@
+name: Dependabot
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Monday at midnight
+  workflow_dispatch:
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Dependabot
+        uses: github/dependabot-action@v3
+        with:
+          file: .github/dependabot.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
