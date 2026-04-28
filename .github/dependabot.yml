@@ -8,18 +8,12 @@ updates:
       day: 'monday'
       time: '09:00'
       timezone: 'Asia/Shanghai'
-    assignees:
-      - 'XuYuXuan'
     rebase-strategy: auto
     open-pull-requests-limit: 6
     cooldown:
       semver-major-days: 14
       semver-minor-days: 3
       semver-patch-days: 2
-    labels:
-      - 'dependencies'
-      - 'dependabot'
-      - 'npm'
     commit-message:
       prefix: 'chore'
       prefix-development: 'chore(dev)'
@@ -43,16 +37,10 @@ updates:
       day: 'monday'
       time: '09:30'
       timezone: 'Asia/Shanghai'
-    assignees:
-      - 'XuYuXuan'
     rebase-strategy: auto
     open-pull-requests-limit: 3
     cooldown:
       default-days: 3
-    labels:
-      - 'dependencies'
-      - 'dependabot'
-      - 'github-actions'
     commit-message:
       prefix: 'ci'
       include: 'scope'
