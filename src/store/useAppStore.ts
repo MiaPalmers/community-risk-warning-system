@@ -21,6 +21,7 @@ interface AppState {
   markEventStatus: (eventId: string, status: RiskEvent['status']) => void;
   setAnalysis: (analysis: VlmAnalysis, boxes: DetectionBox[]) => void;
   setVlmStatus: (status: VlmStatus, error?: string) => void;
+  tickMockAnalysis: () => void;
 }
 
 const waitingAnalysis: VlmAnalysis = {
@@ -30,7 +31,12 @@ const waitingAnalysis: VlmAnalysis = {
   confidence: 0,
   summary: '等待 VLM 模型连接...',
   evidenceTimeline: [],
-  breakdown: [{ label: '等待分析', value: 100 }],
+  breakdown: [
+    { label: '规则触发', value: 40 },
+    { label: '场景敏感度', value: 25 },
+    { label: '持续时长', value: 20 },
+    { label: '历史重复性', value: 15 }
+  ],
   trend: []
 };
 
@@ -87,5 +93,42 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({
       vlmStatus: status,
       vlmError: error ?? null
-    })
+    }),
+
+  tickMockAnalysis: () => {
+    const prev = get().analysis;
+    const jitter = () => Math.floor(Math.random() * 11) - 5;
+    const riskScore = Math.max(0, Math.min(100, prev.riskScore + jitter()));
+    const level: VlmAnalysis['level'] = riskScore >= 70 ? 'A' : riskScore >= 40 ? 'B' : 'C';
+    const b1 = Math.max(5, prev.breakdown[0]?.value ?? 40 + jitter());
+    const b2 = Math.max(5, prev.breakdown[1]?.value ?? 25 - jitter());
+    const b3 = Math.max(5, prev.breakdown[2]?.value ?? 20 + jitter());
+    const b4 = Math.max(5, prev.breakdown[3]?.value ?? 15 - jitter());
+    const total = b1 + b2 + b3 + b4;
+    const breakdown = [
+      { label: '规则触发', value: Math.round((b1 / total) * 100) },
+      { label: '场景敏感度', value: Math.round((b2 / total) * 100) },
+      { label: '持续时长', value: Math.round((b3 / total) * 100) },
+      { label: '历史重复性', value: Math.round((b4 / total) * 100) }
+    ];
+    const now = new Date();
+    const timeLabel = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    const trend = [...prev.trend, { time: timeLabel, value: riskScore }].slice(-MAX_TREND_POINTS);
+    set({
+      analysis: {
+        ...prev,
+        riskScore,
+        level,
+        hasRisk: riskScore >= 40,
+        confidence: Math.min(1, Math.max(0.3, prev.confidence + (Math.random() * 0.1 - 0.05))),
+        summary: riskScore >= 70
+          ? '检测到高风险指标波动，请关注实时画面'
+          : riskScore >= 40
+            ? '风险指标处于中等水平，持续监控中'
+            : '当前场景风险可控，各项指标正常',
+        breakdown,
+        trend
+      }
+    });
+  }
 }));

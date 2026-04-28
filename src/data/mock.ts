@@ -120,9 +120,9 @@ export const cameras: CameraPoint[] = [
 export const defaultAnalysis: VlmAnalysis = {
   riskScore: 86,
   level: 'A',
-  hasLeash: false,
-  hasBark: undefined,
-  hasMuzzle: undefined,
+  hasLoitering: false,
+  hasGathering: undefined,
+  hasFallen: undefined,
   hasRisk: true,
   confidence: 0.96,
   summary: '消防通道内出现电动自行车违规停放并存在疑似飞线充电风险，建议立即核查并通知物业处置。',

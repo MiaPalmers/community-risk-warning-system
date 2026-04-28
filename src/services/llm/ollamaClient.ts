@@ -12,8 +12,9 @@ const SYSTEM_PROMPT = `/no_think
 检测：消防(通道堵塞/电动车违规)、治安(徘徊/聚集/闯入)、救助(摔倒/求助)、环境(积水/损坏)、设备(遮挡/异常)。
 
 直接返回JSON，不要思考过程，不要markdown标记：
-{"hasRisk":false,"riskScore":0,"level":"C","confidence":0.0,"summary":"","evidenceTimeline":[],"breakdown":[{"label":"正常","value":100}],"detectionBoxes":[]}
+{"hasRisk":false,"riskScore":0,"level":"C","confidence":0.0,"hasLoitering":false,"hasGathering":false,"hasFallen":false,"summary":"","evidenceTimeline":[],"breakdown":[{"label":"正常","value":100}],"detectionBoxes":[]}
 
+hasLoitering:同一人员是否在同一区域反复徘徊或异常滞留。hasGathering:是否存在非正常的人员聚集或围观。hasFallen:是否有人员跌倒并持续未起身。
 正常画面：riskScore<30,level=C,hasRisk=false。风险画面按实际填写。detectionBox坐标0-1归一化。breakdown的value总和100。`
 
 function buildUserPrompt(cameraId: string, scene: string): string {
@@ -26,6 +27,9 @@ interface OllamaResponse {
   riskScore: number
   level: string
   confidence: number
+  hasLoitering?: boolean
+  hasGathering?: boolean
+  hasFallen?: boolean
   summary: string
   evidenceTimeline: string[]
   breakdown: { label: string; value: number }[]
@@ -139,6 +143,9 @@ export function parseVlmResponse(raw: string): { analysis: VlmAnalysis; boxes: D
       riskScore: clamp(Number(parsed.riskScore) || 0, 0, 100),
       level: ['A', 'B', 'C'].includes(parsed.level) ? parsed.level as 'A' | 'B' | 'C' : 'C',
       confidence: clamp(Number(parsed.confidence) || 0, 0, 1),
+      hasLoitering: typeof parsed.hasLoitering === 'boolean' ? parsed.hasLoitering : undefined,
+      hasGathering: typeof parsed.hasGathering === 'boolean' ? parsed.hasGathering : undefined,
+      hasFallen: typeof parsed.hasFallen === 'boolean' ? parsed.hasFallen : undefined,
       summary: String(parsed.summary || '分析完成'),
       evidenceTimeline: Array.isArray(parsed.evidenceTimeline) ? parsed.evidenceTimeline : [],
       breakdown: Array.isArray(parsed.breakdown) && parsed.breakdown.length > 0

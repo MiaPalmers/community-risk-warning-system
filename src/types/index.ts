@@ -35,9 +35,9 @@ export interface TrendPoint {
 export interface VlmAnalysis {
   riskScore: number;
   level: 'A' | 'B' | 'C';
-  hasLeash?: boolean;
-  hasBark?: boolean;
-  hasMuzzle?: boolean;
+  hasLoitering?: boolean;
+  hasGathering?: boolean;
+  hasFallen?: boolean;
   hasRisk: boolean;
   summary: string;
   confidence: number;

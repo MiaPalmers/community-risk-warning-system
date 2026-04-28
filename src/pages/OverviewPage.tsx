@@ -15,11 +15,31 @@ import {
   Line,
   XAxis,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ReferenceLine
 } from 'recharts';
 
 const RISK_COLORS = ['#00c3ff', '#3b82f6', '#ff8c00', '#f43f5e'];
+const HIGH_RISK_COLOR = '#f43f5e';
+const NORMAL_COLOR = '#00c3ff';
+const HIGH_RISK_THRESHOLD = 70;
 const RADIAN = Math.PI / 180;
+
+function renderRiskDot(props: any) {
+  const { cx, cy, payload, index } = props;
+  const isHigh = payload.value >= HIGH_RISK_THRESHOLD;
+  return (
+    <circle
+      key={`dot-${index}`}
+      cx={cx}
+      cy={cy}
+      r={isHigh ? 5 : 4}
+      fill={isHigh ? HIGH_RISK_COLOR : NORMAL_COLOR}
+      stroke={isHigh ? '#fff' : '#080f1d'}
+      strokeWidth={2}
+    />
+  );
+}
 
 function renderPieLabel({ cx, cy, midAngle, outerRadius, name, percent }: any) {
   const radius = outerRadius * 1.35;
@@ -42,6 +62,15 @@ export function OverviewPage() {
       videoRef.current.srcObject = stream;
     }
   }, [stream]);
+
+  // VLM 未连接时用 mock 数据驱动图表实时刷新
+  useEffect(() => {
+    if (vlmStatus === 'ready' || vlmStatus === 'analyzing') return;
+    const id = setInterval(() => {
+      useAppStore.getState().tickMockAnalysis();
+    }, 3000);
+    return () => clearInterval(id);
+  }, [vlmStatus]);
 
   const activeCamera = cameras.find((c) => c.id === activeCameraId);
 
@@ -176,14 +205,22 @@ export function OverviewPage() {
                   <Tooltip
                     contentStyle={{ background: 'rgba(8, 15, 29, 0.9)', border: '1px solid rgba(0, 195, 255, 0.2)' }}
                     itemStyle={{ color: '#00c3ff' }}
+                    formatter={(value: number) => [`${value}`, `风险评分${value >= HIGH_RISK_THRESHOLD ? ' (高危)' : ''}`]}
+                  />
+                  <ReferenceLine
+                    y={HIGH_RISK_THRESHOLD}
+                    stroke={HIGH_RISK_COLOR}
+                    strokeDasharray="6 3"
+                    strokeOpacity={0.6}
+                    label={{ value: '高危线', position: 'right', fill: HIGH_RISK_COLOR, fontSize: 10 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="value"
                     stroke="#00c3ff"
                     strokeWidth={3}
-                    dot={{ fill: '#00c3ff', stroke: '#080f1d', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+                    dot={renderRiskDot}
+                    activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2, fill: HIGH_RISK_COLOR }}
                   />
                 </LineChart>
               </ResponsiveContainer>

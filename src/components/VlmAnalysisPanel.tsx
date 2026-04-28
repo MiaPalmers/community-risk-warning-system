@@ -12,16 +12,16 @@ export function VlmAnalysisPanel({ analysis, variant = 'full' }: VlmAnalysisPane
     { label: '是否存在风险', value: analysis.hasRisk ? '是' : '否' },
     { label: '置信度', value: `${Math.round(analysis.confidence * 100)}%` },
     {
-      label: '牵引装置',
-      value: typeof analysis.hasLeash === 'boolean' ? (analysis.hasLeash ? '是' : '否') : '待分析'
+      label: '人员徘徊',
+      value: typeof analysis.hasLoitering === 'boolean' ? (analysis.hasLoitering ? '是' : '否') : '待分析'
     },
     {
-      label: '异常音频',
-      value: typeof analysis.hasBark === 'boolean' ? (analysis.hasBark ? '是' : '否') : '待接入'
+      label: '异常聚集',
+      value: typeof analysis.hasGathering === 'boolean' ? (analysis.hasGathering ? '是' : '否') : '待分析'
     },
     {
-      label: '附加防护',
-      value: typeof analysis.hasMuzzle === 'boolean' ? (analysis.hasMuzzle ? '是' : '否') : '待接入'
+      label: '人员跌倒',
+      value: typeof analysis.hasFallen === 'boolean' ? (analysis.hasFallen ? '是' : '否') : '待分析'
     }
   ];
 
