@@ -63,14 +63,6 @@ export function OverviewPage() {
     }
   }, [stream]);
 
-  // VLM 未连接时用 mock 数据驱动图表实时刷新
-  useEffect(() => {
-    if (vlmStatus === 'ready' || vlmStatus === 'analyzing') return;
-    const id = setInterval(() => {
-      useAppStore.getState().tickMockAnalysis();
-    }, 3000);
-    return () => clearInterval(id);
-  }, [vlmStatus]);
 
   const activeCamera = cameras.find((c) => c.id === activeCameraId);
 
