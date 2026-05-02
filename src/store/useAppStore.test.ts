@@ -3,9 +3,12 @@ import { useAppStore } from './useAppStore';
 
 describe('useAppStore', () => {
   beforeEach(() => {
+    const initialState = useAppStore.getInitialState();
+
     useAppStore.setState({
-      activeCameraId: useAppStore.getState().cameras[0].id,
-      selectedEventId: useAppStore.getState().events[0]?.id,
+      activeCameraId: initialState.cameras[0].id,
+      selectedEventId: initialState.events[0]?.id,
+      analysis: initialState.analysis,
       vlmStatus: 'idle',
       vlmError: null,
       detectionBoxes: [],
@@ -19,6 +22,7 @@ describe('useAppStore', () => {
     expect(state.analysis.riskScore).toBe(0);
     expect(state.analysis.level).toBe('C');
     expect(state.analysis.summary).toContain('等待');
+    expect(state.analysis.breakdown).toEqual([]);
   });
 
   it('keeps camera and event aligned without overwriting real-time analysis', () => {

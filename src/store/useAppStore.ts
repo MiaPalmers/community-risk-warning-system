@@ -30,12 +30,7 @@ const waitingAnalysis: VlmAnalysis = {
   confidence: 0,
   summary: '等待 VLM 模型连接...',
   evidenceTimeline: [],
-  breakdown: [
-    { label: '规则触发', value: 25 },
-    { label: '场景敏感度', value: 25 },
-    { label: '持续时长', value: 25 },
-    { label: '历史重复性', value: 25 }
-  ],
+  breakdown: [],
   trend: []
 };
 

@@ -53,7 +53,7 @@ function renderPieLabel({ cx, cy, midAngle, outerRadius, name, percent }: any) {
 }
 
 export function OverviewPage() {
-  const { cameras, activeCameraId, analysis, setActiveCamera, vlmStatus } = useAppStore();
+  const { cameras, activeCameraId, analysis, analysisTimestamp, setActiveCamera, vlmStatus } = useAppStore();
   const { stream, loading, error } = useLocalCamera();
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -74,6 +74,8 @@ export function OverviewPage() {
   });
 
   const statusCfg = getVlmStatusView(vlmStatus, 'overview');
+  const riskBreakdownData = analysis.breakdown.filter((item) => Number.isFinite(item.value) && item.value > 0);
+  const hasRiskBreakdownData = analysisTimestamp !== null && riskBreakdownData.length > 0;
 
   return (
     <div className="overview-grid">
@@ -138,44 +140,50 @@ export function OverviewPage() {
               风险构成分析环形图
             </div>
             <div style={{ flex: 1, minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={analysis.breakdown}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="42%"
-                    outerRadius="68%"
-                    paddingAngle={3}
-                    dataKey="value"
-                    nameKey="label"
-                    stroke="none"
-                    label={renderPieLabel}
-                    labelLine={false}
-                  >
-                    {analysis.breakdown.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={RISK_COLORS[index % RISK_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <text x="50%" y="44%" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={22} fontWeight={700}>
-                    {analysis.riskScore}
-                  </text>
-                  <text x="50%" y="56%" textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.45)" fontSize={10}>
-                    风险评分
-                  </text>
-                  <Legend
-                    verticalAlign="bottom"
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value: string) => <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>{value}</span>}
-                  />
-                  <Tooltip
-                    contentStyle={{ background: 'rgba(8, 15, 29, 0.9)', border: '1px solid rgba(0, 195, 255, 0.2)' }}
-                    itemStyle={{ color: '#fff' }}
-                    formatter={(value) => [`${value}%`, '占比']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              {hasRiskBreakdownData ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={riskBreakdownData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="42%"
+                      outerRadius="68%"
+                      paddingAngle={3}
+                      dataKey="value"
+                      nameKey="label"
+                      stroke="none"
+                      label={renderPieLabel}
+                      labelLine={false}
+                    >
+                      {riskBreakdownData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={RISK_COLORS[index % RISK_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <text x="50%" y="44%" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={22} fontWeight={700}>
+                      {analysis.riskScore}
+                    </text>
+                    <text x="50%" y="56%" textAnchor="middle" dominantBaseline="central" fill="rgba(255,255,255,0.45)" fontSize={10}>
+                      风险评分
+                    </text>
+                    <Legend
+                      verticalAlign="bottom"
+                      iconType="circle"
+                      iconSize={8}
+                      formatter={(value: string) => <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>{value}</span>}
+                    />
+                    <Tooltip
+                      contentStyle={{ background: 'rgba(8, 15, 29, 0.9)', border: '1px solid rgba(0, 195, 255, 0.2)' }}
+                      itemStyle={{ color: '#fff' }}
+                      formatter={(value) => [`${value}%`, '占比']}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
+                  等待数据…
+                </div>
+              )}
             </div>
           </div>
 
